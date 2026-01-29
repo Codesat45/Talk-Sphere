@@ -182,6 +182,10 @@ const ChatWindow = () => {
       extraHeaders: {
         "my-custom-header": "abcd",
       },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     });
     socket.emit("setup", loggedUser);
     socket.on("connected", () => setSocketConnected(true));
