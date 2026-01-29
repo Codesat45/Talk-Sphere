@@ -61,6 +61,21 @@ export const sendMessge = (messageData) => async (dispatch) => {
   }
 };
 
+// delete message
+export const deleteMessage = (messageId) => async (dispatch) => {
+  try {
+    await axios({
+      method: "DELETE",
+      url: `${SERVER_ACCESS_BASE_URL}/api/message/${messageId}`,
+    });
+
+    return dispatch({ type: "DELETE_MESSAGE", payload: messageId });
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
 // clear all message
 export const clearSelectedMessage = () => async (dispatch) => {
   try {

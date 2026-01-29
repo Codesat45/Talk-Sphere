@@ -13,7 +13,7 @@ const Signup = () => {
         <div className="py-6">
           <div className="px-8 flex flex-col justify-center items-center">
             <div className="logo" style={{ width: "auto" }}>
-              <img src="/images/logo.png" alt="E-Talk logo" />
+              <img src="/images/logo.png" alt="Talk-Sphere logo" />
             </div>
             <SignupForm />
             <div className="mt-2 text-center">
@@ -28,7 +28,7 @@ const Signup = () => {
                   Sign in
                 </NavLink>
               </p>
-              <p>© {new Date().getFullYear()} E-Talk created with ❤️ </p>
+              <p>© {new Date().getFullYear()} Talk-Sphere created with ❤️ </p>
             </div>
           </div>
         </div>

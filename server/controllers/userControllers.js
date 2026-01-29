@@ -21,13 +21,13 @@ const registerUser = asyncHandler(async (req, res) => {
   const contactExists = await User.findOne({ contact });
   if (userExists) {
     return res.status(400).json({
-      message: "Your E-Mail Id is already Registered with E-Talk",
+      message: "Your E-Mail Id is already Registered with Talk-Sphere",
       success: false,
     });
   }
   if (contactExists) {
     return res.status(400).json({
-      message: "Your Mobile is already Registered with E-Talk",
+      message: "Your Mobile is already Registered with Talk-Sphere",
       success: false,
     });
   }
@@ -51,7 +51,7 @@ const registerUser = asyncHandler(async (req, res) => {
       message_Content:
         "<p> Hi " +
         user.name +
-        ",<br /> Please verify your E-Talk Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
+        ",<br /> Please verify your Talk-Sphere Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
         url +
         " >Verify</a></p> ",
     };
@@ -95,7 +95,7 @@ const resendVerificationLink = asyncHandler(async (req, res) => {
       message_Content:
         "<p> Hi " +
         user.name +
-        ",<br /> Please verify your E-Talk Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
+        ",<br /> Please verify your Talk-Sphere Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
         url +
         " >Verify</a></p> ",
     };
@@ -154,7 +154,7 @@ const authUser = asyncHandler(async (req, res) => {
     });
   }
   if (user && (await user.matchPassword(password))) {
-    return res.json({
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -181,7 +181,7 @@ const authUser = asyncHandler(async (req, res) => {
       message_Content:
         "<p> Hi " +
         user.name +
-        ",<br /> Please verify your E-Talk Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
+        ",<br /> Please verify your Talk-Sphere Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
         url +
         " >Verify</a></p> ",
     };
@@ -207,7 +207,7 @@ const allUsers = asyncHandler(async (req, res) => {
       : {};
 
     const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
-    return res.send(users);
+    res.send(users);
   } catch (error) {
     return res.status(401).json({
       message: "Unathorize Access",
@@ -256,7 +256,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     };
 
     await sendEmail(options);
-    return res.status(201).json({
+    res.status(201).json({
       // passwordResetLink: password_Reset_URL,
       message: `Your Password Reset Link has been sent to your Email ${user.email} . Please check you Spam or Junk Folder.`,
       success: true,
@@ -340,7 +340,7 @@ const invitingUser = asyncHandler(async (req, res) => {
     const websiteUrl = CLIENT_ACCESS_URL;
     // console.log(senderUser);
     if (InvitedUser !== null) {
-      return res.status(201).json({
+      res.status(201).json({
         success: false,
         message: "User Already Exist. You chat with user.",
       });
@@ -349,14 +349,14 @@ const invitingUser = asyncHandler(async (req, res) => {
     const options = {
       // name: InvitedUser.name,
       email: email,
-      subject: "E-Talk Invitation",
+      subject: "Talk-Sphere Invitation",
       // verification_Link: url,
       message_Content:
         "<p> Hi " +
         email +
         ",<br /> Your Friend " +
         senderUser.name +
-        " is available on the E-Talk. " +
+        " is available on Talk-Sphere. " +
         senderUser.name +
         " is Waitng for you. Please Register yourself and start chatting with " +
         senderUser.name +
@@ -367,7 +367,7 @@ const invitingUser = asyncHandler(async (req, res) => {
 
     await sendEmail(options);
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: `An Invitation Email is sent to your friend email ${email} `,
     });
@@ -397,7 +397,7 @@ const uploadProfileImage = asyncHandler(async (req, res) => {
     };
 
     user = await User.findByIdAndUpdate(user._id, data, { new: true });
-    return res.status(200).json({
+    res.status(200).json({
       message: "image uploaded successfully",
       result,
       user,

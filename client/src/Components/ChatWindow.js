@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Button } from "../Styles/Button";
 import { BiSmile } from "react-icons/bi";
 import { IoMdSend } from "react-icons/io";
+import { MdDeleteOutline } from "react-icons/md";
 import Dropdown from "./Dropdown";
 import Picker from "@emoji-mart/react";
 import { createRef } from "react";
@@ -17,6 +18,7 @@ import { useDispatch } from "react-redux";
 import {
   sendMessge,
   updateGetAllChats,
+  deleteMessage,
 } from "../Redux/Reducer/Message/message.action";
 
 import { Dialog, Menu, Transition } from "@headlessui/react";
@@ -157,6 +159,12 @@ const ChatWindow = () => {
     setNewMessage("");
     await dispatch(sendMessge(messageData));
   };
+
+  const handleDeleteMessage = (messageId) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      dispatch(deleteMessage(messageId));
+    }
+  };
   useEffect(() => {
     if (inputRef.current !== null) {
       inputRef.current.selectionEnd = cursorPosition;
@@ -258,7 +266,7 @@ const ChatWindow = () => {
                       />
                     </div>
                   </div>
-                  <h4>Welcome to E-Talk Chat App</h4>
+                  <h4>Welcome to Talk-Sphere Chat App</h4>
                   <p>Click on user to start chat.</p>
                   {/* <Button>Get Started</Button> */}
                 </div>
@@ -364,7 +372,14 @@ const ChatWindow = () => {
                                     />
                                   </div>
                                   <div className="user-chat-content">
-                                    <div className="flex mb-3 justify-end">
+                                    <div className="flex mb-3 justify-end gap-2">
+                                      <button
+                                        onClick={() => handleDeleteMessage(item._id)}
+                                        className="text-red-500 hover:text-red-700 transition"
+                                        title="Delete message"
+                                      >
+                                        <MdDeleteOutline size={18} />
+                                      </button>
                                       <div className="chat-wrap-content">
                                         <span className="mb-0 chat-content text-sm font-medium text-left">
                                           {item.content}

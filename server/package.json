@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
@@ -15,7 +14,7 @@
     "cloudinary": "^1.34.0",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "helmet": "^6.0.1",

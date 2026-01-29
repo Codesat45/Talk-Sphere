@@ -1,8 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import Wave from "react-wavify";
+import axios from "axios";
+
+const SERVER_ACCESS_BASE_URL = process.env.REACT_APP_SERVER_ACCESS_BASE_URL;
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSubmitStatus("");
+
+    try {
+      const response = await axios.post(
+        `${SERVER_ACCESS_BASE_URL}/api/feedback`,
+        formData
+      );
+
+      if (response.data.success) {
+        setSubmitStatus("Feedback sent successfully! Thank you for your feedback.");
+        setFormData({ name: "", email: "", message: "" });
+        setTimeout(() => setSubmitStatus(""), 5000);
+      }
+    } catch (error) {
+      setSubmitStatus(
+        error.response?.data?.message || "Failed to send feedback. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Wrapper id="contact">
       <div className="custom-container">
@@ -29,22 +72,63 @@ const Contact = () => {
                 <h2>Send us your feedback</h2>
               </div>
 
-              <div className="mt-5">
-                <input className="input" type="text" name="" id="" />
-              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="mt-5">
+                  <input
+                    className="input"
+                    type="text"
+                    name="name"
+                    placeholder="Your Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-              <div className="mt-5">
-                <input className="input" type="text" />
-              </div>
+                <div className="mt-5">
+                  <input
+                    className="input"
+                    type="email"
+                    name="email"
+                    placeholder="Your Email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-              <div className="suggestion mt-5 w-full">
-                <textarea
-                 className="w-full p-5"
-                  name="message"
-                  rows="5"
-                  placeholder="suggestion..."
-                ></textarea>
-              </div>
+                <div className="suggestion mt-5 w-full">
+                  <textarea
+                    className="w-full p-5"
+                    name="message"
+                    rows="5"
+                    placeholder="Share your feedback or suggestion..."
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                  ></textarea>
+                </div>
+
+                {submitStatus && (
+                  <div
+                    className={`mt-4 p-3 rounded text-center ${
+                      submitStatus.includes("successfully")
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {submitStatus}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-5 w-full py-3 px-5 bg-cyan-500 text-white rounded font-semibold hover:bg-cyan-600 transition disabled:opacity-50"
+                >
+                  {loading ? "Sending..." : "Send Feedback"}
+                </button>
+              </form>
             </div>
           </div>
         </div>

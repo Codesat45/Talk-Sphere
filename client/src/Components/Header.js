@@ -21,7 +21,7 @@ const Header = () => {
     <div className={header ? "header active flex justify-between items-center w-full" : "header flex justify-between items-center w-full"}>
     <NavLink to="/">
         <div className='hero-section-logo flex justify-center items-center'>
-        <img src="./images/logo.png" alt="E-Talk logo"  loading='lazy' className='logo'/>
+        <img src="./images/logo.png" alt="Talk-Sphere logo"  loading='lazy' className='logo'/>
         </div>
     </NavLink>
     <Nav/>

@@ -6,6 +6,7 @@ const colors = require("colors");
 const chatRoutes = require("./routes/chatRoutes");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
 const cors = require("cors");
 const helmet = require("helmet");
 
@@ -35,7 +36,7 @@ app.use(express.json());
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to E-Talk Server",
+    message: "Welcome to Talk-Sphere Server",
   });
 });
 
@@ -43,6 +44,7 @@ app.get("/", (req, res) => {
 app.use("/api/chat", chatRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/feedback", feedbackRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

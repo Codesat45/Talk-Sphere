@@ -37,6 +37,14 @@ const messageReducer = (state = initialState, action) => {
 
       };
 
+    case "DELETE_MESSAGE":
+      return {
+        ...state,
+        allMessages: state.allMessages.filter(
+          (msg) => msg._id !== action.payload
+        ),
+      };
+
     case CLEAR_ALL_MESSAGE:
       return {
         ...state,

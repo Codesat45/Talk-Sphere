@@ -16,7 +16,7 @@ const Login = () => {
         <div className="h-full py-6">
           <div className="px-8 flex flex-col justify-center items-center">
             <div className="logo" style={{ width: "auto" }}>
-              <img src="/images/logo.png" alt="E-Talk logo" />
+              <img src="/images/logo.png" alt="Talk-Sphere logo" />
             </div>
             <LoginForm />
             <div className="mt-6 text-center">
@@ -29,7 +29,7 @@ const Login = () => {
                   Sign up
                 </NavLink>
               </p>
-              <p>© {new Date().getFullYear()} E-Talk created with ❤️ </p>
+              <p>© {new Date().getFullYear()} Talk-Sphere created with ❤️ </p>
             </div>
           </div>
         </div>

@@ -100,7 +100,7 @@ const SignupForm = () => {
         <div className="mb-8"></div>
         <div className="mb-8">
           <h3 className="mb-1 text-center">Sign up</h3>
-          <p className="text-center">Get your free E-Talk account now..</p>
+          <p className="text-center">Get your free Talk-Sphere account now..</p>
         </div>
         <div className=" px-8 pb-8 card">
           {/* <form action="#"> */}

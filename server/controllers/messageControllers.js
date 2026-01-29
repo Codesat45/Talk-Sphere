@@ -57,4 +57,42 @@ const sendMessage = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { allMessages, sendMessage };
+//@description     Delete Message
+//@route           DELETE /api/message/:messageId
+//@access          Protected
+const deleteMessage = asyncHandler(async (req, res) => {
+  try {
+    const { messageId } = req.params;
+
+    // Find message first
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({
+        message: "Message not found",
+        success: false,
+      });
+    }
+
+    // Check if user is the sender
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(401).json({
+        message: "You can only delete your own messages",
+        success: false,
+      });
+    }
+
+    // Delete the message
+    await Message.findByIdAndDelete(messageId);
+
+    return res.status(200).json({
+      message: "Message deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+module.exports = { allMessages, sendMessage, deleteMessage };

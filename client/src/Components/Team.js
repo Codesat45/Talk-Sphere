@@ -63,10 +63,8 @@ const Team = () => {
               },
               525: {
                 slidesPerView: 2,
-              },
-              945: {
-                slidesPerView: 3,
-              },
+              }
+              
             }}
           >
             {teamImg.map((item, index) => (
@@ -141,6 +139,7 @@ const Wrapper = styled.section`
 
   .custom-container {
     position: relative;
+
     max-width: 100%;
     padding-left: 15px;
     padding-right: 15px;
@@ -159,6 +158,7 @@ const Wrapper = styled.section`
 
     .team-list {
       text-align: center;
+
       .swiper {
         justify-content: center;
         align-items: center;
