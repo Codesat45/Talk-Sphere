@@ -2,6 +2,11 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+
+  "engines": {
+    "node": "18.x"
+  },
+
   "dependencies": {
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
@@ -36,19 +41,23 @@
     "swiper": "^9.1.0",
     "web-vitals": "^2.1.4"
   },
+
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false NODE_OPTIONS=--max_old_space_size=4096 react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+
   "proxy": "https://e-talk-server.onrender.com",
+
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
   },
+
   "browserslist": {
     "production": [
       ">0.2%",
@@ -61,6 +70,7 @@
       "last 1 safari version"
     ]
   },
+
   "devDependencies": {
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.19",
