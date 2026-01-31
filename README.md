@@ -1,4 +1,6 @@
 [![Logo](https://e-talk.vercel.app/images/logo.png)](https://e-talk.vercel.app)
+[![Telesphere Logo](https://your-image-host.com/telesphere.png)](https://talk-sphere-frontend-9el7.onrender.com)
+
 
 # E-Talk
 
