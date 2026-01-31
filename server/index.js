@@ -26,7 +26,10 @@ const { Server } = require("socket.io");
 
 // const cors = require("cors");
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://talk-sphere-frontend-9el7.onrender.com"],
+  credentials: true
+}));
 
 const server = http.createServer(app);
 
@@ -59,7 +62,7 @@ server.listen(PORT, () => {
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: CLIENT_ACCESS_URL,
+    origin: ["http://localhost:3000", "https://talk-sphere-frontend-9el7.onrender.com"],
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true,
