@@ -1,4 +1,5 @@
 [![Logo](https://e-talk.vercel.app/images/logo.png)](https://e-talk.vercel.app)
+[![Telesphere Logo](https://talk-sphere-frontend-9el7.onrender.com/images/telesphere-logo.png)](https://talk-sphere-frontend-9el7.onrender.com)
 
 
 # Tele-Sphere
