@@ -1,14 +1,13 @@
 [![Logo](https://e-talk.vercel.app/images/logo.png)](https://e-talk.vercel.app)
-[![Telesphere Logo](https://your-image-host.com/telesphere.png)](https://talk-sphere-frontend-9el7.onrender.com)
 
 
-# E-Talk
+# Tele-Sphere
 
-E-Talk is a basic chat Application that is build using the MERN Stack stands for MongoDB, ExpressJS, ReactJS, NodeJS.
+Tele-Sphere is a basic chat Application that is build using the MERN Stack stands for MongoDB, ExpressJS, ReactJS, NodeJS.
 
 ## Live Website
 
-- [E-Talk](https://e-talk.vercel.app)
+- [Tele-Sphere](https://talk-sphere-frontend-9el7.onrender.com/)
 
 ## Features
 
@@ -154,10 +153,9 @@ after starting the both Frontend and Backend server you can access application o
 
 ## Authors
 
-- [@narendercoder](https://github.com/narendercoder)
-- [@niteshtiwari52](https://github.com/niteshtiwari52)
-- [@Rituresh143](https://github.com/Rituresh143)
+- [@Codesat45](https://github.com/Codesat45)
+- [@Dheerajkumar](https://github.com/Dheereaj)
 
 ## Feedback
 
-If you have any feedback or Suggestion, please reach out to us at etalkhelp12@gmail.com
+If you have any feedback or Suggestion, please reach out to us at st0670048@gmail.com
