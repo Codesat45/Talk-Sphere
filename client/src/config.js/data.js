@@ -88,7 +88,7 @@ export const teamImg = [
     "id" : 2,
     "name": "Dheeraj Kumar",
     "src" : "/team/dheeraj.jpeg",
-    "role" : "Nall La Backend Developer",
+    "role" : "Backend Developer",
     "link": "https://gamma.app/docs/Satyam-Tripathi-woi6lqi32v491ah",
   }
  
