@@ -1,4 +1,3 @@
-[![Logo](https://e-talk.vercel.app/images/logo.png)](https://e-talk.vercel.app)
 
 
 # Tele-Sphere
