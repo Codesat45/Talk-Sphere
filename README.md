@@ -153,7 +153,7 @@ after starting the both Frontend and Backend server you can access application o
 ## Authors
 
 - [@Codesat45](https://github.com/Codesat45)
-- [@Dheerajkumar](https://github.com/Dheereaj)
+- [@Dheerajkumar873](https://github.com/DheerajKumar873)
 
 ## Feedback
 
