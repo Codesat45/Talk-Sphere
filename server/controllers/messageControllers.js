@@ -10,6 +10,12 @@ const allMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
       .populate("sender", "name pic email")
+      .populate({
+        path: "replyTo",
+        select: "content messageType sender",
+        populate: { path: "sender", select: "name" },
+      })
+      .populate("reactions.user", "name pic")
       .populate("chat");
     res.json(messages);
   } catch (error) {
@@ -23,9 +29,9 @@ const allMessages = asyncHandler(async (req, res) => {
 //@route           POST /api/Message/
 //@access          Protected
 const sendMessage = asyncHandler(async (req, res) => {
-  const { content, chatId } = req.body;
+  const { content, chatId, messageType = "text", mediaUrl, replyTo } = req.body;
 
-  if (!content || !chatId) {
+  if ((!content && !mediaUrl) || !chatId) {
     // console.log("Invalid data passed into request");
     return res.sendStatus(400);
   }
@@ -34,13 +40,22 @@ const sendMessage = asyncHandler(async (req, res) => {
     sender: req.user._id,
     content: content,
     chat: chatId,
+    messageType,
+    mediaUrl,
+    replyTo,
   };
 
   try {
     var message = await Message.create(newMessage);
 
     message = await message.populate("sender", "name pic");
+    message = await message.populate({
+      path: "replyTo",
+      select: "content messageType sender",
+      populate: { path: "sender", select: "name" },
+    });
     message = await message.populate("chat");
+    message = await message.populate("reactions.user", "name pic");
     message = await User.populate(message, {
       path: "chat.users",
       select: "name pic email",
@@ -95,4 +110,105 @@ const deleteMessage = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { allMessages, sendMessage, deleteMessage };
+const editMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { content } = req.body;
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({
+      message: "Message content is required",
+      success: false,
+    });
+  }
+
+  const message = await Message.findById(messageId);
+
+  if (!message) {
+    return res.status(404).json({
+      message: "Message not found",
+      success: false,
+    });
+  }
+
+  if (message.sender.toString() !== req.user._id.toString()) {
+    return res.status(401).json({
+      message: "You can only edit your own messages",
+      success: false,
+    });
+  }
+
+  message.content = content.trim();
+  message.isEdited = true;
+  await message.save();
+
+  const updatedMessage = await Message.findById(message._id)
+    .populate("sender", "name pic email")
+    .populate({
+      path: "replyTo",
+      select: "content messageType sender",
+      populate: { path: "sender", select: "name" },
+    })
+    .populate("reactions.user", "name pic")
+    .populate("chat");
+
+  res.json(updatedMessage);
+});
+
+const reactToMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { emoji } = req.body;
+
+  if (!emoji) {
+    return res.status(400).json({
+      message: "Emoji is required",
+      success: false,
+    });
+  }
+
+  const message = await Message.findById(messageId);
+
+  if (!message) {
+    return res.status(404).json({
+      message: "Message not found",
+      success: false,
+    });
+  }
+
+  const existingReaction = message.reactions.find(
+    (reaction) => reaction.user.toString() === req.user._id.toString()
+  );
+
+  if (existingReaction) {
+    if (existingReaction.emoji === emoji) {
+      message.reactions = message.reactions.filter(
+        (reaction) => reaction.user.toString() !== req.user._id.toString()
+      );
+    } else {
+      existingReaction.emoji = emoji;
+    }
+  } else {
+    message.reactions.push({ user: req.user._id, emoji });
+  }
+
+  await message.save();
+
+  const updatedMessage = await Message.findById(message._id)
+    .populate("sender", "name pic email")
+    .populate({
+      path: "replyTo",
+      select: "content messageType sender",
+      populate: { path: "sender", select: "name" },
+    })
+    .populate("reactions.user", "name pic")
+    .populate("chat");
+
+  res.json(updatedMessage);
+});
+
+module.exports = {
+  allMessages,
+  sendMessage,
+  deleteMessage,
+  editMessage,
+  reactToMessage,
+};

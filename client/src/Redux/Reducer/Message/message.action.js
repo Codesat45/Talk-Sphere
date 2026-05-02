@@ -3,6 +3,7 @@ import {
   SEND_MESSAGE,
   GET_ALL_MESSAGE,
   UPDATE_GET_ALL_MESSAGE,
+  REPLACE_MESSAGE,
   SHOW_TOOGLE_LOADING,
   SHOW_NETWORK_ERROR,
 } from "./message.type";
@@ -45,6 +46,21 @@ export const updateGetAllChats = (messageRecived) => async (dispatch) => {
   }
 };
 
+export const replaceMessage = (messageRecived) => async (dispatch) => {
+  try {
+    if (!messageRecived?._id) {
+      return;
+    }
+    return dispatch({
+      type: REPLACE_MESSAGE,
+      payload: messageRecived,
+    });
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
 // send message
 export const sendMessge = (messageData) => async (dispatch) => {
   try {
@@ -70,6 +86,38 @@ export const deleteMessage = (messageId) => async (dispatch) => {
     });
 
     return dispatch({ type: "DELETE_MESSAGE", payload: messageId });
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
+export const editMessage = (messageId, content) => async (dispatch) => {
+  try {
+    const updatedMessage = await axios({
+      method: "PUT",
+      url: `${SERVER_ACCESS_BASE_URL}/api/message/${messageId}`,
+      data: { content },
+    });
+
+    dispatch({ type: REPLACE_MESSAGE, payload: updatedMessage.data });
+    return updatedMessage.data;
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
+export const reactToMessage = (messageId, emoji) => async (dispatch) => {
+  try {
+    const updatedMessage = await axios({
+      method: "PUT",
+      url: `${SERVER_ACCESS_BASE_URL}/api/message/${messageId}/react`,
+      data: { emoji },
+    });
+
+    dispatch({ type: REPLACE_MESSAGE, payload: updatedMessage.data });
+    return updatedMessage.data;
   } catch (error) {
     dispatch(showNetworkError(true));
     return dispatch({ type: "ERROR", payload: error });

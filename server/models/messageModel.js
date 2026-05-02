@@ -5,6 +5,20 @@ const messageModel = mongoose.Schema(
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     content: { type: String, trim: true },
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
+    messageType: {
+      type: String,
+      enum: ["text", "image", "file"],
+      default: "text",
+    },
+    mediaUrl: { type: String, trim: true },
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
+    reactions: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        emoji: { type: String, default: "👍" },
+      },
+    ],
+    isEdited: { type: Boolean, default: false },
   },
   {
     timestamps: true,

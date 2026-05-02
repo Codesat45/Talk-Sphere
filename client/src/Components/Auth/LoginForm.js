@@ -9,13 +9,11 @@ import { useNavigate } from "react-router-dom";
 import { clearAuthStore, signIn } from "../../Redux/Reducer/Auth/auth.action";
 import { toast } from "react-toastify";
 import ShowPasswordToggle from "../ShowPasswordToggle";
-import Loading1 from "../Loading1";
 
 const LoginForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [Icon, InputType] = ShowPasswordToggle();
-  const [message, setMessage] = useState("");
   const [userData, setUserData] = useState({
     email: "",
     password: "",
@@ -26,18 +24,12 @@ const LoginForm = () => {
   const status = useSelector((globalState) => globalState.auth.success);
   // const user = useSelector((globalState) => globalState.user.userDetails);
   // const serverResponse = useSelector((globalState) => globalState.auth);
-  const navigateToHome = async () => {
-    await navigate("/");
-    await dispatch(clearAuthStore());
-  };
-
   useEffect(() => {
     if (result) {
       // if (!user) {
       //   dispatch(clearAuthStore());
       //   return;
       // }
-      setMessage(result);
       if (!status) {
         toast.error(result, {
           position: "top-right",
@@ -63,11 +55,12 @@ const LoginForm = () => {
         });
         // console.log("redirecting");
         // dispatch(clearAuthStore());
-        navigateToHome();
+        navigate("/");
+        dispatch(clearAuthStore());
         // console.log("redirected");
       }
     }
-  }, [result]);
+  }, [dispatch, navigate, result, status]);
 
   const handleChange = (e) => {
     setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -111,7 +104,7 @@ const LoginForm = () => {
                     className="input input-md h-11"
                     type="email"
                     name="email"
-                    autoComplete="off"
+                    autoComplete="email"
                     placeholder="user name or email"
                     value={userData.email}
                     onChange={handleChange}
@@ -133,7 +126,7 @@ const LoginForm = () => {
                       className="input input-md h-11"
                       type={InputType}
                       name="password"
-                      autoComplete="off"
+                      autoComplete="current-password"
                       placeholder="Password"
                       value={userData.password}
                       onChange={handleChange}
@@ -160,7 +153,7 @@ const LoginForm = () => {
               >
                 {loading1 ? (
                   <>
-                    <span>Signing...</span>
+                    <span>Signing in...</span>
                     {/* <Loading1 /> */}
                   </>
                 ) : (

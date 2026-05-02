@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import {
   clearAuthStore,
@@ -44,7 +44,7 @@ const ForgotPassword = () => {
         });
       }
     }
-  }, [result]);
+  }, [result, status]);
   //   on change of the email field
   const handleChange = (e) => {
     setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -101,7 +101,7 @@ const ForgotPassword = () => {
 
           <div className="w-full p-6 bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md dark:bg-gray-800 dark:border-gray-700 sm:p-8">
             <h2 className="mb-1 text-xl font-bold text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-              Forogt Password
+              Forgot Password
             </h2>
             {/* <form className="mt-4 space-y-4 lg:mt-5 md:space-y-5" action="#"> */}
             {message ? (
@@ -145,12 +145,18 @@ const ForgotPassword = () => {
                   </div>
 
                   <button
-                    type="submit"
+                    type="button"
                     className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                     onClick={sendPasswordResetLink}
                   >
                     Reset Link
                   </button>
+                  <p className="text-sm text-center text-gray-500 dark:text-gray-300">
+                    Remembered your password?{" "}
+                    <Link className="font-medium text-primary-600" to="/auth">
+                      Back to login
+                    </Link>
+                  </p>
                 </div>
               </>
             )}
@@ -159,7 +165,6 @@ const ForgotPassword = () => {
           </div>
         </div>
       </section>
-      <ToastContainer />
     </>
   );
 };

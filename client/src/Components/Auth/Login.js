@@ -29,7 +29,7 @@ const Login = () => {
                   Sign up
                 </NavLink>
               </p>
-              <p>© {new Date().getFullYear()} Talk-Sphere created with ❤️ </p>
+              <p>© {new Date().getFullYear()} Talk-Sphere created with love</p>
             </div>
           </div>
         </div>

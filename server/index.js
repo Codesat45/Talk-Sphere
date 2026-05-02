@@ -7,6 +7,7 @@ const chatRoutes = require("./routes/chatRoutes");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const feedbackRoutes = require("./routes/feedbackRoutes");
+const storyRoutes = require("./routes/storyRoutes");
 const cors = require("cors");
 const helmet = require("helmet");
 
@@ -48,6 +49,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/story", storyRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
@@ -91,6 +93,22 @@ io.on("connection", (socket) => {
   }));
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
+  socket.on("call:user", ({ to, from, signal, callType, chatId }) => {
+    socket.in(to).emit("call:incoming", { from, signal, callType, chatId });
+  });
+
+  socket.on("call:accept", ({ to, from, signal, chatId }) => {
+    socket.in(to).emit("call:accepted", { from, signal, chatId });
+  });
+
+  socket.on("call:ice-candidate", ({ to, from, candidate, chatId }) => {
+    socket.in(to).emit("call:ice-candidate", { from, candidate, chatId });
+  });
+
+  socket.on("call:end", ({ to, from, chatId }) => {
+    socket.in(to).emit("call:ended", { from, chatId });
+  });
+
   socket.on("new message", (newMessageRecieved) => {
     var chat = newMessageRecieved.chat;
     if (!chat) {
@@ -105,6 +123,20 @@ io.on("connection", (socket) => {
         return;
       }
       socket.in(user._id).emit("message recieved", newMessageRecieved);
+    });
+  });
+
+  socket.on("message update", (updatedMessage) => {
+    const chat = updatedMessage.chat;
+    if (!chat || !chat.users) {
+      return;
+    }
+
+    chat.users.forEach((user) => {
+      if (user._id == updatedMessage.sender._id) {
+        return;
+      }
+      socket.in(user._id).emit("message updated", updatedMessage);
     });
   });
 });

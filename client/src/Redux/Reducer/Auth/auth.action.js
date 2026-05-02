@@ -13,7 +13,17 @@ import {
   CLEAR_AUTH_STORE,
 } from "./auth.type";
 
-const SERVER_ACCESS_BASE_URL = process.env.REACT_APP_SERVER_ACCESS_BASE_URL||"http://localhost:5000";
+const SERVER_ACCESS_BASE_URL =
+  process.env.REACT_APP_SERVER_ACCESS_BASE_URL || "http://localhost:5000";
+
+const getErrorPayload = (error, fallbackMessage) => {
+  return (
+    error.response?.data || {
+      message: fallbackMessage,
+      success: false,
+    }
+  );
+};
 
 // Sign IN
 
@@ -27,18 +37,23 @@ export const signIn = (userData) => async (dispatch) => {
     });
     // console.log(User);
 
-    localStorage.setItem(
-      "ETalkUser",
-      JSON.stringify({ token: User.data.token })
-    );
+    if (User.data.success && User.data.token) {
+      localStorage.setItem(
+        "ETalkUser",
+        JSON.stringify({ token: User.data.token })
+      );
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${User.data.token}`;
+    }
     // window.location.reload();
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${User.data.token}`;
 
     return dispatch({ type: SIGN_IN, payload: User.data });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error.response.data });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(error, "Unable to sign in. Please try again."),
+    });
   }
 };
 
@@ -64,7 +79,10 @@ export const signUp = (userData) => async (dispatch) => {
 
     return dispatch({ type: SIGN_UP, payload: User.data });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error.response.data });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(error, "Unable to sign up. Please try again."),
+    });
   }
 };
 
@@ -84,7 +102,13 @@ export const userVerification = (data) => async (dispatch) => {
       payload: verificationLink.data,
     });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(
+        error,
+        "Unable to send verification email. Please try again."
+      ),
+    });
   }
 };
 
@@ -98,7 +122,13 @@ export const verifyEmailLink = (token) => async (dispatch) => {
     });
     return dispatch({ type: VERIFY_TOKEN, payload: verificationStatus.data });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error.response.data });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(
+        error,
+        "Unable to verify email. Please try again."
+      ),
+    });
   }
 };
 
@@ -117,7 +147,13 @@ export const forgotPassword = (data) => async (dispatch) => {
       payload: forgotPasswordStatus.data,
     });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error.response.data });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(
+        error,
+        "Unable to send password reset email. Please try again."
+      ),
+    });
   }
 };
 
@@ -141,7 +177,13 @@ export const resetPassword = (userData) => async (dispatch) => {
       payload: resetPasswordStatus.data,
     });
   } catch (error) {
-    return dispatch({ type: "ERROR", payload: error.response.data });
+    return dispatch({
+      type: "ERROR",
+      payload: getErrorPayload(
+        error,
+        "Unable to reset password. Please try again."
+      ),
+    });
   }
 };
 

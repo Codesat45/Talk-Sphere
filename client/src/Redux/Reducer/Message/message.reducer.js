@@ -2,6 +2,7 @@ import {} from "./message.action";
 import {
   CLEAR_ALL_MESSAGE,
   GET_ALL_MESSAGE,
+  REPLACE_MESSAGE,
   SEND_MESSAGE,
   SHOW_NETWORK_ERROR,
   SHOW_TOOGLE_LOADING,
@@ -31,10 +32,32 @@ const messageReducer = (state = initialState, action) => {
       };
 
     case UPDATE_GET_ALL_MESSAGE:
+      if (
+        state.allMessages.some((message) => message._id === action.payload._id)
+      ) {
+        return {
+          ...state,
+          allMessages: state.allMessages.map((message) =>
+            message._id === action.payload._id ? action.payload : message
+          ),
+        };
+      }
       return {
         ...state,
         allMessages: [...state.allMessages, action.payload],
 
+      };
+
+    case REPLACE_MESSAGE:
+      return {
+        ...state,
+        allMessages: state.allMessages.map((message) =>
+          message._id === action.payload._id ? action.payload : message
+        ),
+        createdMessage:
+          state.createdMessage?._id === action.payload._id
+            ? action.payload
+            : state.createdMessage,
       };
 
     case "DELETE_MESSAGE":

@@ -5,7 +5,7 @@ const userSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true, selected: false },
+    password: { type: String, required: true, select: false },
     about: { type: String, default: "Hey there! I am using Talk-Sphere" },
     contact: { type: Number, required: true },
     pic: {
@@ -25,8 +25,8 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified) {
-    next();
+  if (!this.isModified("password")) {
+    return next();
   }
 
   const salt = await bcrypt.genSalt(10);

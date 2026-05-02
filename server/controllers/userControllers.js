@@ -146,29 +146,29 @@ const verifyEmail = asyncHandler(async (req, res) => {
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  if (!email || !password) {
+    return res.status(400).json({
+      message: "Please enter email and password",
+      success: false,
+    });
+  }
+
+  const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return res.status(404).json({
+    return res.status(401).json({
       message: "Invalid Credentials OR User not found",
       success: false,
     });
   }
-  if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      pic: user.pic,
-      token: generateToken(user._id),
-      message: "Login Successfull",
-      success: true,
-    });
-  } else {
-    return res.status(404).json({
+
+  const passwordMatched = await user.matchPassword(password);
+  if (!passwordMatched) {
+    return res.status(401).json({
       message: "Invalid Credentials OR User not found",
       success: false,
     });
   }
+
   if (!user.is_verified) {
     const token = generateToken(user._id, "120s");
     const url = `${CLIENT_ACCESS_URL}/verify-email/${token}`;
@@ -190,8 +190,19 @@ const authUser = asyncHandler(async (req, res) => {
     return res.status(201).json({
       // verificationURL: url,
       message: `An Email is sent to your Email ${user.email}. Please Verify Your Email`,
+      success: false,
     });
   }
+
+  return res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    pic: user.pic,
+    token: generateToken(user._id),
+    message: "Login Successful",
+    success: true,
+  });
 });
 
 // Search user
@@ -273,10 +284,24 @@ const resetPassword = asyncHandler(async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
+    if (!token || !newPassword) {
+      return res.status(400).send({
+        message: "Password reset token and new password are required",
+        success: false,
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).send({
+        message: "Password must be at least 6 characters long",
+        success: false,
+      });
+    }
+
     //decodes token id
     const decoded = await jwt.verify(token, JWT_SECRET);
 
-    let user = await User.findOne({ _id: decoded.id }).select("password");
+    let user = await User.findOne({ _id: decoded.id }).select("+password");
     // console.log(user);
     if (!user) {
       return res.status(400).send({ message: "Invalid link" });
@@ -293,7 +318,6 @@ const resetPassword = asyncHandler(async (req, res) => {
     res.status(200).send({
       message: "Password changed successfully",
       success: true,
-      user,
     });
   } catch (error) {
     res.status(400).send({
