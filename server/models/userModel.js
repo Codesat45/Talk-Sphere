@@ -7,7 +7,7 @@ const userSchema = mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
     about: { type: String, default: "Hey there! I am using Talk-Sphere" },
-    contact: { type: Number, required: true },
+    contact: { type: Number, default: 0 },
     pic: {
       type: String,
       default:

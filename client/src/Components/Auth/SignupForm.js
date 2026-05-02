@@ -30,7 +30,7 @@ const SignupForm = () => {
   const serverResponse = useSelector((globalState) => globalState.auth);
 
   useEffect(() => {
-    if (!serverResponse) {
+    if (!serverResponse || (!serverResponse.success && !serverResponse.message)) {
       return;
     }
     if (serverResponse.success === false) {
@@ -49,8 +49,7 @@ const SignupForm = () => {
       return;
     }
     if (serverResponse.success === true) {
-      // dispatch(clearAuthStore());
-      toast.success("Account Created Successfully", {
+      toast.success("Account created successfully!", {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -61,16 +60,15 @@ const SignupForm = () => {
         theme: "light",
       });
       navigate("/");
-      // alert("navigated");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverResponse]);
 
   const handleChange = (e) => {
     setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSignUp = () => {
-    setLoading(true);
+  const handleSignUp = async () => {
     if (userData.password !== userData.confirmPassword) {
       toast.error("Password and Confirm Password Does not match", {
         autoClose: 1000,
@@ -78,20 +76,15 @@ const SignupForm = () => {
       return;
     }
 
-    if (
-      userData.email &&
-      userData.password &&
-      userData.name &&
-      userData.confirmPassword
-    ) {
-      dispatch(signUp(userData));
+    if (userData.email && userData.password && userData.name) {
+      setLoading(true);
+      await dispatch(signUp(userData));
       setLoading(false);
     } else {
-      toast.error("Please Fill the Data", {
+      toast.error("Please fill in name, email and password", {
         autoClose: 1000,
       });
     }
-    // dispatch(getMySelf());
   };
 
   return (
@@ -136,15 +129,14 @@ const SignupForm = () => {
               </div>
             </div>
             <div className="form-item vertical">
-              <label className="form-label mb-2">Mobile</label>
+              <label className="form-label mb-2">Mobile <span className="text-xs opacity-60">(optional)</span></label>
               <div className="">
                 <input
                   className="input input-md h-11"
                   type="number"
                   name="contact"
                   autoComplete="off"
-                  placeholder="+91-phone no.."
-                  required
+                  placeholder="Phone number (optional)"
                   value={userData.contact}
                   onChange={handleChange}
                 />

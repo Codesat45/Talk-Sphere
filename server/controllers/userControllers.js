@@ -12,58 +12,47 @@ const { JWT_SECRET, CLIENT_ACCESS_URL } = require("../config/keys");
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, contact, pic } = req.body;
 
-  if (!name || !email || !password || !contact) {
+  if (!name || !email || !password) {
     res.status(400);
-    throw new Error("Please Enter all the Feilds");
+    throw new Error("Please enter name, email and password");
   }
 
   const userExists = await User.findOne({ email });
-  const contactExists = await User.findOne({ contact });
   if (userExists) {
     return res.status(400).json({
-      message: "Your E-Mail Id is already Registered with Talk-Sphere",
+      message: "This email is already registered with Talk-Sphere",
       success: false,
     });
   }
-  if (contactExists) {
-    return res.status(400).json({
-      message: "Your Mobile is already Registered with Talk-Sphere",
-      success: false,
-    });
+
+  // Only check contact uniqueness if one was provided
+  if (contact) {
+    const contactExists = await User.findOne({ contact });
+    if (contactExists) {
+      return res.status(400).json({
+        message: "This mobile number is already registered with Talk-Sphere",
+        success: false,
+      });
+    }
   }
 
   const user = await User.create({
     name,
     email,
     password,
-    contact,
+    contact: contact || 0,
     pic,
+    is_verified: true, // auto-verify — no email confirmation required
   });
 
   if (user) {
-    const token = generateToken(user._id, "120s");
-    const url = `${CLIENT_ACCESS_URL}/verify-email/${token}`;
-    const options = {
-      name: user.name,
-      email: user.email,
-      subject: "Verify Email",
-      verification_Link: url,
-      message_Content:
-        "<p> Hi " +
-        user.name +
-        ",<br /> Please verify your Talk-Sphere Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
-        url +
-        " >Verify</a></p> ",
-    };
-    await sendEmail(options);
-
     return res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       pic: user.pic,
       token: generateToken(user._id, "30d"),
-      message: "An Email is sent to your Email. Please Verify Your Email",
+      message: "Account created successfully",
       success: true,
     });
   } else {
@@ -170,28 +159,8 @@ const authUser = asyncHandler(async (req, res) => {
   }
 
   if (!user.is_verified) {
-    const token = generateToken(user._id, "120s");
-    const url = `${CLIENT_ACCESS_URL}/verify-email/${token}`;
-
-    const options = {
-      name: user.name,
-      email: user.email,
-      subject: "Verify Email",
-      verification_Link: url,
-      message_Content:
-        "<p> Hi " +
-        user.name +
-        ",<br /> Please verify your Talk-Sphere Account by clicking on the verification link. This Verification link is valid for 2:00 minutes <br /> <a href =" +
-        url +
-        " >Verify</a></p> ",
-    };
-    await sendEmail(options);
-
-    return res.status(201).json({
-      // verificationURL: url,
-      message: `An Email is sent to your Email ${user.email}. Please Verify Your Email`,
-      success: false,
-    });
+    // Auto-verify the user so they can log in without email confirmation
+    await User.findByIdAndUpdate(user._id, { is_verified: true });
   }
 
   return res.json({

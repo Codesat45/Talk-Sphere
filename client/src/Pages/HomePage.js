@@ -49,17 +49,7 @@ const HomePage = () => {
     }
   }, [user]);
   useEffect(() => {
-    if (status === undefined) {
-      return;
-    }
-    if (!status) {
-      navigate("/verification");
-      // alert("mot verified ");
-    }
-    // else {
-    // alert("verified");
-    // }
-
+    // Verification wall removed — all users are auto-verified on register/login
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 

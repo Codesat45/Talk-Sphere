@@ -67,15 +67,15 @@ export const signUp = (userData) => async (dispatch) => {
       data: { ...userData },
     });
 
-    localStorage.setItem(
-      "ETalkUser",
-      JSON.stringify({ token: User.data.token })
-    );
-    // window.location.reload();
-
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${User.data.token}`;
+    if (User.data.success && User.data.token) {
+      localStorage.setItem(
+        "ETalkUser",
+        JSON.stringify({ token: User.data.token })
+      );
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${User.data.token}`;
+    }
 
     return dispatch({ type: SIGN_UP, payload: User.data });
   } catch (error) {
