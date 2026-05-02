@@ -29,6 +29,7 @@ import {
 } from "../HelperFunction/chat.Helper";
 import {
   deleteMessage,
+  deleteMessageForMe,
   editMessage,
   reactToMessage,
   replaceMessage,
@@ -400,8 +401,14 @@ const ChatWindow = () => {
   };
 
   const handleDeleteMessage = (messageId) => {
-    if (window.confirm("Are you sure you want to delete this message?")) {
+    if (window.confirm("Are you sure you want to delete this message for everyone?")) {
       dispatch(deleteMessage(messageId));
+    }
+  };
+
+  const handleDeleteMessageForMe = (messageId) => {
+    if (window.confirm("Delete this message for you only? Others will still see it.")) {
+      dispatch(deleteMessageForMe(messageId));
     }
   };
 
@@ -584,6 +591,16 @@ const ChatWindow = () => {
       <button type="button" onClick={() => handleReactToMessage(item, "❤️")}>
         ❤️
       </button>
+      {/* Delete for me — available on ALL messages */}
+      <button
+        type="button"
+        title="Delete for me"
+        className="delete-for-me-btn"
+        onClick={() => handleDeleteMessageForMe(item._id)}
+      >
+        <MdDeleteOutline />
+      </button>
+      {/* Delete for everyone — only sender can do this */}
       {isMyMessage(loggedUser, item) && (
         <>
           <button type="button" title="Edit" onClick={() => handleEditMessage(item)}>
@@ -591,7 +608,8 @@ const ChatWindow = () => {
           </button>
           <button
             type="button"
-            title="Delete"
+            title="Delete for everyone"
+            className="delete-for-all-btn"
             onClick={() => handleDeleteMessage(item._id)}
           >
             <MdDeleteOutline />
@@ -1169,6 +1187,14 @@ const Wrapper = styled.section`
       justify-content: center;
       box-shadow: 0 1px 5px rgb(15 34 58 / 12%);
       font-size: 0.8rem;
+    }
+    .delete-for-me-btn {
+      color: #f59e0b;
+      &:hover { background-color: rgba(245,158,11,0.12); }
+    }
+    .delete-for-all-btn {
+      color: #ef4444;
+      &:hover { background-color: rgba(239,68,68,0.12); }
     }
   }
   .message-row:hover .message-actions {

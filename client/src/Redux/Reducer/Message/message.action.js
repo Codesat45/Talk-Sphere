@@ -77,7 +77,7 @@ export const sendMessge = (messageData) => async (dispatch) => {
   }
 };
 
-// delete message
+// delete message for everyone (sender only)
 export const deleteMessage = (messageId) => async (dispatch) => {
   try {
     await axios({
@@ -86,6 +86,36 @@ export const deleteMessage = (messageId) => async (dispatch) => {
     });
 
     return dispatch({ type: "DELETE_MESSAGE", payload: messageId });
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
+// delete message only for me (any message, any sender)
+export const deleteMessageForMe = (messageId) => async (dispatch) => {
+  try {
+    await axios({
+      method: "PUT",
+      url: `${SERVER_ACCESS_BASE_URL}/api/message/${messageId}/delete-for-me`,
+    });
+
+    return dispatch({ type: "DELETE_MESSAGE", payload: messageId });
+  } catch (error) {
+    dispatch(showNetworkError(true));
+    return dispatch({ type: "ERROR", payload: error });
+  }
+};
+
+// delete entire chat for me only
+export const deleteChatForMe = (chatId) => async (dispatch) => {
+  try {
+    await axios({
+      method: "DELETE",
+      url: `${SERVER_ACCESS_BASE_URL}/api/message/chat/${chatId}/delete-for-me`,
+    });
+
+    return dispatch({ type: "DELETE_CHAT_FOR_ME", payload: chatId });
   } catch (error) {
     dispatch(showNetworkError(true));
     return dispatch({ type: "ERROR", payload: error });

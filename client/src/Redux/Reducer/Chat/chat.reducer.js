@@ -74,6 +74,13 @@ const chatReducer = (state = initialState, action) => {
         isUserLoading: action.payload,
       };
 
+    case "DELETE_CHAT_FOR_ME":
+      return {
+        ...state,
+        chats: state.chats.filter((c) => c._id !== action.payload),
+        selectedChat: state.selectedChat?._id === action.payload ? {} : state.selectedChat,
+      };
+
     default:
       return {
         ...state,

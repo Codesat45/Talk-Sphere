@@ -1,17 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { getSender, getSenderPic } from "../HelperFunction/chat.Helper";
-
 import moment from "moment";
 import Highlighter from "react-highlight-words";
+import { MdDeleteOutline } from "react-icons/md";
+import { useDispatch } from "react-redux";
+import { deleteChatForMe } from "../Redux/Reducer/Message/message.action";
+import { clearSelectChatAction } from "../Redux/Reducer/Chat/chat.action";
 
-const UserList = ({ searchOpen, query , chatList, chat, loggedUser, result, setSelectedChat }) => {
+const UserList = ({ searchOpen, query, chatList, chat, loggedUser, result, setSelectedChat }) => {
+  const dispatch = useDispatch();
+  const [hoveredChat, setHoveredChat] = useState(null);
   
   const userChatShow = () => {
     document
       .getElementById("user-chat")
       .classList.add("user-chat-show", "fadeInRight");
     document.getElementById("user-chat").classList.remove("fadeInRight2");
+  };
+
+  const handleDeleteChat = async (e, chatId) => {
+    e.stopPropagation(); // don't select the chat
+    if (!window.confirm("Delete this chat for you? This cannot be undone.")) return;
+    await dispatch(deleteChatForMe(chatId));
+    await dispatch(clearSelectChatAction());
   };
 
   return (
@@ -36,6 +48,8 @@ const UserList = ({ searchOpen, query , chatList, chat, loggedUser, result, setS
                   onClick={() => setSelectedChat(item)}
                   key={item._id}
                   id="chat-box-wrapper"
+                  onMouseEnter={() => setHoveredChat(item._id)}
+                  onMouseLeave={() => setHoveredChat(null)}
                   className={
                     result === item
                       ? "chat-box-wrapper active px-5 py-2"
@@ -137,6 +151,15 @@ const UserList = ({ searchOpen, query , chatList, chat, loggedUser, result, setS
                         </span>
                       )}
                     </div>
+                    {hoveredChat === item._id && (
+                      <button
+                        className="delete-chat-btn"
+                        title="Delete chat for me"
+                        onClick={(e) => handleDeleteChat(e, item._id)}
+                      >
+                        <MdDeleteOutline />
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}
@@ -158,6 +181,29 @@ const Wrapper = styled.section`
 
   mark {
     background-color: ${({ theme }) => theme.colors.primaryRgb};
+  }
+  .chat-box-wrapper {
+    position: relative;
+  }
+  .delete-chat-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #ef4444;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
   }
   .chat-main {
     height: calc(100vh - 90px);

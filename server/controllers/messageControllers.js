@@ -8,7 +8,10 @@ const Chat = require("../models/chatModel");
 //@access          Protected
 const allMessages = asyncHandler(async (req, res) => {
   try {
-    const messages = await Message.find({ chat: req.params.chatId })
+    const messages = await Message.find({
+      chat: req.params.chatId,
+      deletedFor: { $ne: req.user._id }, // hide messages deleted for this user
+    })
       .populate("sender", "name pic email")
       .populate({
         path: "replyTo",
@@ -19,7 +22,6 @@ const allMessages = asyncHandler(async (req, res) => {
       .populate("chat");
     res.json(messages);
   } catch (error) {
-    0;
     res.status(400);
     throw new Error(error.message);
   }
@@ -205,10 +207,65 @@ const reactToMessage = asyncHandler(async (req, res) => {
   res.json(updatedMessage);
 });
 
+//@description     Delete a message only for the requesting user (hide from their view)
+//@route           PUT /api/message/:messageId/delete-for-me
+//@access          Protected
+const deleteMessageForMe = asyncHandler(async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Message not found", success: false });
+    }
+
+    if (!message.deletedFor.includes(req.user._id)) {
+      message.deletedFor.push(req.user._id);
+      await message.save();
+    }
+
+    return res.status(200).json({ message: "Message hidden for you", success: true });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+//@description     Delete entire chat for the requesting user only
+//@route           DELETE /api/message/chat/:chatId/delete-for-me
+//@access          Protected
+const deleteChatForMe = asyncHandler(async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found", success: false });
+    }
+
+    if (!chat.users.some((u) => u.toString() === req.user._id.toString())) {
+      return res.status(403).json({ message: "You are not part of this chat", success: false });
+    }
+
+    // Mark all messages in this chat as deleted for this user
+    await Message.updateMany(
+      { chat: chatId, deletedFor: { $ne: req.user._id } },
+      { $push: { deletedFor: req.user._id } }
+    );
+
+    return res.status(200).json({ message: "Chat deleted for you", success: true, chatId });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
 module.exports = {
   allMessages,
   sendMessage,
   deleteMessage,
   editMessage,
   reactToMessage,
+  deleteMessageForMe,
+  deleteChatForMe,
 };

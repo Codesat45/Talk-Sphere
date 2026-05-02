@@ -19,6 +19,7 @@ const messageModel = mongoose.Schema(
       },
     ],
     isEdited: { type: Boolean, default: false },
+    deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,
