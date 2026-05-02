@@ -29,13 +29,11 @@ const getErrorPayload = (error, fallbackMessage) => {
 
 export const signIn = (userData) => async (dispatch) => {
   try {
-    // console.log(SERVER_ACCESS_BASE_URL);
     const User = await axios({
       method: "POST",
       url: `${SERVER_ACCESS_BASE_URL}/api/user/login/`,
       data: { ...userData },
     });
-    // console.log(User);
 
     if (User.data.success && User.data.token) {
       localStorage.setItem(
@@ -46,7 +44,6 @@ export const signIn = (userData) => async (dispatch) => {
         "Authorization"
       ] = `Bearer ${User.data.token}`;
     }
-    // window.location.reload();
 
     return dispatch({ type: SIGN_IN, payload: User.data });
   } catch (error) {
@@ -61,10 +58,16 @@ export const signIn = (userData) => async (dispatch) => {
 
 export const signUp = (userData) => async (dispatch) => {
   try {
+    // Ensure contact is always sent — deployed server requires it
+    const payload = {
+      ...userData,
+      contact: userData.contact || Math.floor(Math.random() * 9000000000) + 1000000000,
+    };
+
     const User = await axios({
       method: "POST",
       url: `${SERVER_ACCESS_BASE_URL}/api/user`,
-      data: { ...userData },
+      data: payload,
     });
 
     if (User.data.success && User.data.token) {
