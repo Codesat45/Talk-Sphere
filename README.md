@@ -1,160 +1,202 @@
+# Talk-Sphere 💬
 
+A full-stack real-time chat application built with the MERN stack and Socket.IO. Talk-Sphere supports one-on-one and group messaging, audio/video calls, stories, emoji reactions, and much more — all wrapped in a clean, responsive UI with light/dark mode support.
 
-# Tele-Sphere
+---
 
-Tele-Sphere is a basic chat Application that is build using the MERN Stack stands for MongoDB, ExpressJS, ReactJS, NodeJS.
+## 🌐 Live Demo
 
-## Live Website
+| Service | URL |
+|---------|-----|
+| Frontend | [https://talk-sphere-frontend-9el7.onrender.com](https://talk-sphere-frontend-9el7.onrender.com) |
+| Backend API | [https://talk-sphere-3.onrender.com](https://talk-sphere-3.onrender.com) |
 
-- [Tele-Sphere](https://talk-sphere-frontend-9el7.onrender.com/)
+---
 
-## Features
+## ✨ Features
 
-- Sign Up
-- Sign In
-- Email Verification
-- Forgot Password
-- Reset Password
-- Dark/Light mode
-- one-on-one
-- Group Chat
-- Group Creation with min 3 users
-- Chat Theme
-- Update Profile Image
-- Update Profile Details
-- View others profile
-- Fully Responsive
+- **Real-time messaging** — instant one-on-one and group chat powered by Socket.IO
+- **Audio & Video calls** — peer-to-peer WebRTC calls with accept/reject flow
+- **Stories** — post text or image stories visible to all users, with view tracking
+- **Message reactions** — react to any message with emoji (👍 ❤️ and more)
+- **Reply to messages** — inline reply with quoted preview
+- **Edit & Delete messages** — update or remove your own messages in real time
+- **Image messages** — share images via URL in chat
+- **Message search** — filter messages in the active chat window
+- **Group chats** — create and manage group conversations
+- **Typing indicators** — see when the other person is typing
+- **User authentication** — register, login, email verification, forgot/reset password
+- **Profile management** — update name, profile picture via Cloudinary
+- **Favourites** — mark contacts or chats as favourites
+- **Light / Dark mode** — toggle between themes
+- **Custom accent colors** — choose from multiple theme color options
+- **Fully responsive** — works on desktop and mobile
 
-## Tech Stack
+---
 
-**Client:** React, Redux, TailwindCSS
+## 🛠️ Technologies Used
 
-**Server:** Node, Express
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| React 18 | UI framework |
+| Redux + Redux Thunk | State management |
+| Socket.IO Client | Real-time communication |
+| Styled Components | Component-level styling |
+| Tailwind CSS | Utility-first CSS |
+| Framer Motion | Animations |
+| Axios | HTTP requests |
+| React Router v6 | Client-side routing |
+| Emoji Mart | Emoji picker |
+| Moment.js | Date/time formatting |
+| Swiper | Team carousel |
+| AOS | Scroll animations |
+| React Toastify | Toast notifications |
+| React Icons | Icon library |
 
-**Deployment:** Vercel(Frontend), Backend(Render)
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| Node.js | Runtime environment |
+| Express.js | Web framework |
+| MongoDB + Mongoose | Database & ODM |
+| Socket.IO | WebSocket server |
+| JSON Web Token (JWT) | Authentication |
+| bcryptjs | Password hashing |
+| Cloudinary | Image/media storage |
+| Nodemailer | Email (verification, password reset) |
+| Multer | File upload handling |
+| Helmet | HTTP security headers |
+| dotenv | Environment variable management |
 
-## Installation Guide
+---
 
-To Run E-Talk project on local system follow the simple steps:
+## 📁 Project Structure
 
-### Step-1
-
-clone this project on your local system
-
-```bash
-  git clone https://github.com/Nitesh52221/E-Talk.git
-  cd E-Talk
+```
+Talk-Sphere/
+├── client/                  # React frontend
+│   ├── public/
+│   └── src/
+│       ├── Components/      # UI components (Chat, Auth, Modals, etc.)
+│       ├── Pages/           # Route-level pages
+│       ├── Redux/           # Redux reducers, actions, types
+│       ├── Layout/          # Layout HOC
+│       ├── GlobalStyle/     # Global styled-components theme
+│       ├── HelperFunction/  # Utility functions
+│       └── config.js/       # Static data (features, team, colors)
+│
+└── server/                  # Express backend
+    ├── config/              # DB connection, environment keys
+    ├── controllers/         # Route handlers
+    ├── middleware/          # Auth, error handling
+    ├── models/              # Mongoose schemas
+    └── routes/              # API route definitions
 ```
 
-### Step-2 Installing Dependency
+---
 
-Installing Dependency for client and Server both
+## 🚀 Getting Started
 
-```bash
-  cd E-Talk
-```
+### Prerequisites
 
-To Installing Dependency for client
+- Node.js >= 16
+- MongoDB Atlas account (or local MongoDB)
+- Cloudinary account (for image uploads)
+- Gmail account with App Password (for email features)
 
-```bash
-  cd client
-  npm i
-```
-
-To Installing Dependency for server
+### 1. Clone the repository
 
 ```bash
-  cd server
-  npm i
+git clone https://github.com/Codesat45/Talk-Sphere.git
+cd Talk-Sphere
 ```
 
-### Step-3 Adding Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file
-
-### Environment Variables for Client
-
-`REACT_APP_SERVER_ACCESS_BASE_URL`
-
-### Environment Variables for Server
-
-`MONGO_URL`
-
-`JWT_SECRET`
-
-`CLOUDINARY_CLOUD_NAME`
-
-`CLOUDINARY_API_KEY`
-
-`CLOUDINARY_API_SECRET`
-
-`SMPT_SERVICES`
-
-`SMPT_MAIL`
-
-`SMPT_PASSWORD`
-
-`SMPT_HOST`
-
-`SMPT_PORT`
-
-`CLIENT_ACCESS_URL`
-
-### Step-4 Start the Application on local machine
-
-#### To Start Frontend Server(or client):
-
-Move into client Directory by
+### 2. Set up the server
 
 ```bash
-  cd client
+cd server
+npm install
 ```
 
-start the Frontend server by
+Create a `.env` file in the `server/` directory:
+
+```env
+MONGO_URL=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+SMPT_SERVICES=gmail
+SMPT_MAIL=your_email@gmail.com
+SMPT_PASSWORD=your_gmail_app_password
+SMPT_HOST=smtp.gmail.com
+SMPT_PORT=587
+PORT=5000
+CLIENT_ACCESS_URL=http://localhost:3000
+```
+
+Start the server:
 
 ```bash
-  npm start
+npm run dev      # development (nodemon)
+# or
+npm start        # production
 ```
 
-after ruunning this command, It will start after some time.
-
-#### To Start Backend Server(or server):
-
-Move into server Directory by
+### 3. Set up the client
 
 ```bash
-  cd server
+cd client
+npm install
 ```
 
-start the Backend server by
+Create a `.env` file in the `client/` directory:
+
+```env
+REACT_APP_SERVER_ACCESS_BASE_URL=http://localhost:5000
+```
+
+Start the client:
 
 ```bash
-  npm start
+npm start
 ```
 
-To start the server automatic after every changes we have to run this command :
+The app will be available at `http://localhost:3000`.
 
-```bash
-  npm run dev
-```
+---
 
-after starting the both Frontend and Backend server you can access application on the browser.
+## 🔌 API Endpoints
 
-## Screenshots
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/user/register` | Register a new user |
+| POST | `/api/user/login` | Login |
+| GET | `/api/user` | Search users |
+| GET | `/api/chat` | Get all chats |
+| POST | `/api/chat` | Create / access a chat |
+| POST | `/api/chat/group` | Create a group chat |
+| GET | `/api/message/:chatId` | Get messages for a chat |
+| POST | `/api/message` | Send a message |
+| PUT | `/api/message/:id` | Edit a message |
+| DELETE | `/api/message/:id` | Delete a message |
+| GET | `/api/story` | Get all stories |
+| POST | `/api/story` | Create a story |
+| PUT | `/api/story/:id/view` | Mark story as viewed |
+| DELETE | `/api/story/:id` | Delete a story |
 
-![image](https://github.com/narendercoder/E-Talk/assets/89627914/4524a5d6-a87e-4d1a-bf55-c67282a983a9)
+---
 
+## 👥 Team
 
+| Name | Role |
+|------|------|
+| Satyam Tripathi | Frontend Developer |
+| Dheeraj Kumar | Backend Developer |
 
-![image](https://github.com/narendercoder/E-Talk/assets/89627914/ac583b1d-af2c-45c7-864c-1a6ef8e3cd74)
+---
 
+## 📄 License
 
-
-## Authors
-
-- [@Codesat45](https://github.com/Codesat45)
-- [@Dheerajkumar873](https://github.com/DheerajKumar873)
-
-## Feedback
-
-If you have any feedback or Suggestion, please reach out to us at st0670048@gmail.com
+This project is open source and available under the [MIT License](LICENSE).
