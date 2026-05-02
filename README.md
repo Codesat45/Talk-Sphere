@@ -119,22 +119,7 @@ cd server
 npm install
 ```
 
-Create a `.env` file in the `server/` directory:
-
-```env
-MONGO_URL=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-SMPT_SERVICES=gmail
-SMPT_MAIL=your_email@gmail.com
-SMPT_PASSWORD=your_gmail_app_password
-SMPT_HOST=smtp.gmail.com
-SMPT_PORT=587
-PORT=5000
-CLIENT_ACCESS_URL=http://localhost:3000
-```
+Create a `.env` file in the `server/` directory with your MongoDB, JWT, Cloudinary, SMTP, and port configuration.
 
 Start the server:
 
@@ -151,11 +136,7 @@ cd client
 npm install
 ```
 
-Create a `.env` file in the `client/` directory:
-
-```env
-REACT_APP_SERVER_ACCESS_BASE_URL=http://localhost:5000
-```
+Create a `.env` file in the `client/` directory with your server base URL.
 
 Start the client:
 
