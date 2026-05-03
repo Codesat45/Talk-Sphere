@@ -365,7 +365,3 @@ module.exports = {
   saveCallHistory,
   getCallHistory,
 };
-  deleteMessageForMe,
-  deleteChatForMe,
-  uploadMedia,
-};
