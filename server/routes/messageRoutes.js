@@ -10,6 +10,8 @@ const {
   deleteMessageForMe,
   deleteChatForMe,
   uploadMedia,
+  saveCallHistory,
+  getCallHistory,
 } = require("../controllers/messageControllers");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -37,6 +39,8 @@ const upload = multer({
 
 router.route("/").post(protect, sendMessage);
 router.post("/upload", protect, upload.single("file"), uploadMedia);
+router.post("/call-history", protect, saveCallHistory);
+router.get("/call-history/:chatId", protect, getCallHistory);
 router.put("/:messageId/delete-for-me", protect, deleteMessageForMe);
 router.put("/:messageId", protect, editMessage);
 router.put("/:messageId/react", protect, reactToMessage);

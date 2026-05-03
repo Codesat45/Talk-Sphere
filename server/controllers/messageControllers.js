@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Message = require("../models/messageModel");
 const User = require("../models/userModel");
 const Chat = require("../models/chatModel");
+const CallHistory = require("../models/callHistoryModel");
 const cloudinary = require("../utils/cloudinary");
 
 //@description     Get all Messages
@@ -301,12 +302,69 @@ const uploadMedia = asyncHandler(async (req, res) => {
   }
 });
 
+//@description     Save call history
+//@route           POST /api/message/call-history
+//@access          Protected
+const saveCallHistory = asyncHandler(async (req, res) => {
+  try {
+    const { chatId, callType, duration, participants } = req.body;
+
+    if (!chatId || !callType) {
+      return res.status(400).json({ message: "Chat ID and call type are required", success: false });
+    }
+
+    const callHistory = await CallHistory.create({
+      chat: chatId,
+      callType,
+      duration: duration || 0,
+      participants: participants || [req.user._id],
+      initiator: req.user._id,
+      status: duration > 0 ? "completed" : "missed",
+    });
+
+    return res.status(201).json({
+      message: "Call history saved",
+      success: true,
+      callHistory,
+    });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
+//@description     Get call history for a chat
+//@route           GET /api/message/call-history/:chatId
+//@access          Protected
+const getCallHistory = asyncHandler(async (req, res) => {
+  try {
+    const { chatId } = req.params;
+
+    const callHistory = await CallHistory.find({ chat: chatId })
+      .populate("initiator", "name pic")
+      .populate("participants", "name pic")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    return res.status(200).json(callHistory);
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
 module.exports = {
   allMessages,
   sendMessage,
   deleteMessage,
   editMessage,
   reactToMessage,
+  deleteMessageForMe,
+  deleteChatForMe,
+  uploadMedia,
+  saveCallHistory,
+  getCallHistory,
+};
   deleteMessageForMe,
   deleteChatForMe,
   uploadMedia,

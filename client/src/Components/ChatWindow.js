@@ -108,6 +108,8 @@ const ChatWindow = () => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const callTimerRef = useRef(null);
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -126,7 +128,26 @@ const ChatWindow = () => {
         });
       }
     }
-  }, [callState.active]);
+    
+    // Start call timer when call is active and connected
+    if (callState.active && callState.status === "Connected") {
+      setCallDuration(0);
+      callTimerRef.current = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+        callTimerRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+      }
+    };
+  }, [callState.active, callState.status]);
 
   const senderUser = useSelector(
     (globalState) => globalState.chat.selectedChat
@@ -207,9 +228,36 @@ const ChatWindow = () => {
     return primaryRecipient;
   };
 
+  const formatCallDuration = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const cleanupCall = useCallback(
-    (notify = true) => {
+    async (notify = true) => {
       const currentCall = callStateRef.current;
+      
+      // Save call history if call was connected
+      if (currentCall?.active && currentCall?.remoteUser && callDuration > 0) {
+        try {
+          await axios.post(`${SERVER_ACCESS_BASE_URL}/api/message/call-history`, {
+            chatId: currentCall.chatId,
+            callType: currentCall.callType,
+            duration: callDuration,
+            participants: [loggedUser._id, currentCall.remoteUser._id],
+          });
+          console.log("Call history saved");
+        } catch (error) {
+          console.error("Failed to save call history:", error);
+        }
+      }
+      
       if (notify && currentCall?.remoteUser && socket) {
         socket.emit("call:end", {
           to: currentCall.remoteUser._id,
@@ -236,8 +284,13 @@ const ChatWindow = () => {
       setIsMicOn(true);
       setIsCameraOn(true);
       setIsSpeakerOn(true);
+      setCallDuration(0);
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+        callTimerRef.current = null;
+      }
     },
-    [loggedUser]
+    [loggedUser, callDuration]
   );
 
   const toggleMic = () => {
@@ -1223,6 +1276,9 @@ const ChatWindow = () => {
               <>
                 <h5>{callState.status}</h5>
                 <p>{callState.remoteUser?.name}</p>
+                {callState.status === "Connected" && callDuration > 0 && (
+                  <div className="call-timer">{formatCallDuration(callDuration)}</div>
+                )}
                 <div className="video-grid">
                   <div className="video-container">
                     <video 
@@ -1231,7 +1287,13 @@ const ChatWindow = () => {
                       muted 
                       playsInline 
                       className="local-video"
+                      style={{ display: callState.callType === "video" ? "block" : "none" }}
                     />
+                    {callState.callType === "audio" && (
+                      <div className="audio-avatar">
+                        <img src={loggedUser?.pic} alt="You" />
+                      </div>
+                    )}
                     <span className="video-label">You</span>
                   </div>
                   <div className="video-container">
@@ -1240,7 +1302,13 @@ const ChatWindow = () => {
                       autoPlay 
                       playsInline 
                       className="remote-video"
+                      style={{ display: callState.callType === "video" ? "block" : "none" }}
                     />
+                    {callState.callType === "audio" && (
+                      <div className="audio-avatar">
+                        <img src={callState.remoteUser?.pic} alt={callState.remoteUser?.name} />
+                      </div>
+                    )}
                     <span className="video-label">{callState.remoteUser?.name}</span>
                   </div>
                 </div>
@@ -1728,6 +1796,15 @@ const Wrapper = styled.section`
       font-size: 1.2rem;
     }
   }
+  .call-timer {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #10b981;
+    padding: 6px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 20px;
+    margin-top: -8px;
+  }
   .video-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(180px, 320px));
@@ -1740,6 +1817,22 @@ const Wrapper = styled.section`
         background: #111827;
         border-radius: 8px;
         object-fit: cover;
+      }
+      .audio-avatar {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #111827;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        img {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid rgba(255, 255, 255, 0.2);
+        }
       }
       .video-label {
         position: absolute;
