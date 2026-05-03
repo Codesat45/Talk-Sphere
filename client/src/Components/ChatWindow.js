@@ -110,6 +110,7 @@ const ChatWindow = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const callTimerRef = useRef(null);
+  const callDurationRef = useRef(0);
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -132,8 +133,13 @@ const ChatWindow = () => {
     // Start call timer when call is active and connected
     if (callState.active && callState.status === "Connected") {
       setCallDuration(0);
+      callDurationRef.current = 0;
       callTimerRef.current = setInterval(() => {
-        setCallDuration(prev => prev + 1);
+        setCallDuration(prev => {
+          const newDuration = prev + 1;
+          callDurationRef.current = newDuration;
+          return newDuration;
+        });
       }, 1000);
     } else {
       if (callTimerRef.current) {
@@ -242,14 +248,15 @@ const ChatWindow = () => {
   const cleanupCall = useCallback(
     async (notify = true) => {
       const currentCall = callStateRef.current;
+      const currentDuration = callDurationRef.current;
       
       // Save call history if call was connected
-      if (currentCall?.active && currentCall?.remoteUser && callDuration > 0) {
+      if (currentCall?.active && currentCall?.remoteUser && currentDuration > 0) {
         try {
           await axios.post(`${SERVER_ACCESS_BASE_URL}/api/message/call-history`, {
             chatId: currentCall.chatId,
             callType: currentCall.callType,
-            duration: callDuration,
+            duration: currentDuration,
             participants: [loggedUser._id, currentCall.remoteUser._id],
           });
           console.log("Call history saved");
@@ -285,12 +292,13 @@ const ChatWindow = () => {
       setIsCameraOn(true);
       setIsSpeakerOn(true);
       setCallDuration(0);
+      callDurationRef.current = 0;
       if (callTimerRef.current) {
         clearInterval(callTimerRef.current);
         callTimerRef.current = null;
       }
     },
-    [loggedUser, callDuration]
+    [loggedUser]
   );
 
   const toggleMic = () => {
@@ -716,7 +724,25 @@ const ChatWindow = () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      // Show loading state
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB");
+        return;
+      }
+
+      console.log("Uploading file:", file.name, file.type, file.size);
+
+      // Show loading message
+      const loadingMessage = {
+        _id: Date.now(),
+        content: `Uploading ${file.name}...`,
+        sender: loggedUser,
+        chat: sender,
+        createdAt: new Date(),
+        isLoading: true,
+      };
+      setMessage(prev => [...prev, loadingMessage]);
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -725,9 +751,16 @@ const ChatWindow = () => {
           `${SERVER_ACCESS_BASE_URL}/api/message/upload`,
           formData,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { 
+              "Content-Type": "multipart/form-data",
+            },
           }
         );
+
+        console.log("Upload response:", response.data);
+
+        // Remove loading message
+        setMessage(prev => prev.filter(m => m._id !== loadingMessage._id));
 
         if (response.data.success) {
           const messageType = response.data.resourceType === "video" ? "file" : 
@@ -738,9 +771,16 @@ const ChatWindow = () => {
             mediaUrl: response.data.url,
             content: newMessage.trim() || file.name,
           });
+        } else {
+          alert("Upload failed: " + (response.data.message || "Unknown error"));
         }
       } catch (error) {
-        alert("Failed to upload file. Please try again.");
+        console.error("Upload error:", error);
+        // Remove loading message
+        setMessage(prev => prev.filter(m => m._id !== loadingMessage._id));
+        
+        const errorMsg = error.response?.data?.message || error.message || "Failed to upload file";
+        alert(`Upload failed: ${errorMsg}`);
       }
     };
     input.click();
