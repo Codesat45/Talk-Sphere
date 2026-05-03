@@ -390,14 +390,42 @@ const ChatWindow = () => {
     await dispatch(sendMessge(messageData));
   };
 
-  const sendImageMessage = () => {
-    const mediaUrl = window.prompt("Paste an image URL");
-    if (!mediaUrl) return;
-    handleSendMessage({
-      messageType: "image",
-      mediaUrl,
-      content: newMessage.trim() || "Image",
-    });
+  const sendImageMessage = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*,video/*,.pdf,.doc,.docx";
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Show loading state
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await axios.post(
+          `${SERVER_ACCESS_BASE_URL}/api/message/upload`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        if (response.data.success) {
+          const messageType = response.data.resourceType === "video" ? "file" : 
+                             response.data.resourceType === "image" ? "image" : "file";
+          
+          await handleSendMessage({
+            messageType,
+            mediaUrl: response.data.url,
+            content: newMessage.trim() || file.name,
+          });
+        }
+      } catch (error) {
+        alert("Failed to upload file. Please try again.");
+      }
+    };
+    input.click();
   };
 
   const handleDeleteMessage = (messageId) => {
@@ -561,9 +589,21 @@ const ChatWindow = () => {
           <img className="message-image" src={item.mediaUrl} alt="sent media" />
         </a>
       ) : null}
-      <span className="mb-0 chat-content text-sm font-medium text-left">
-        {item.content}
-      </span>
+      {item.messageType === "file" && item.mediaUrl ? (
+        <a 
+          href={item.mediaUrl} 
+          target="_blank" 
+          rel="noreferrer"
+          className="message-file-link"
+        >
+          📎 {item.content || "Download file"}
+        </a>
+      ) : null}
+      {item.messageType === "text" && (
+        <span className="mb-0 chat-content text-sm font-medium text-left">
+          {item.content}
+        </span>
+      )}
       {item.isEdited && <small className="edited-label">edited</small>}
       {item.reactions?.length ? (
         <div className="reaction-row">
@@ -830,7 +870,7 @@ const ChatWindow = () => {
                     <button
                       type="button"
                       className="btn emoji-btn mr-2"
-                      title="Send image URL"
+                      title="Upload file (image, video, document)"
                       onClick={sendImageMessage}
                     >
                       <MdImage />
@@ -1221,6 +1261,21 @@ const Wrapper = styled.section`
     display: block;
     margin-bottom: 8px;
   }
+  .message-file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(59, 130, 246, 0.12);
+    border-radius: 8px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    &:hover {
+      background: rgba(59, 130, 246, 0.2);
+    }
+  }
   .edited-label,
   .reaction-row {
     display: block;
@@ -1306,8 +1361,15 @@ const Wrapper = styled.section`
     background: rgba(0, 0, 0, 0.58);
   }
   .call-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 12px;
+    background: rgba(0, 0, 0, 0.92);
     color: #fff;
     h5 {
       font-size: 1.2rem;

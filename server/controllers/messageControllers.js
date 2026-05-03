@@ -260,6 +260,37 @@ const deleteChatForMe = asyncHandler(async (req, res) => {
   }
 });
 
+//@description     Upload media file (image/video/document) to cloudinary
+//@route           POST /api/message/upload
+//@access          Protected
+const uploadMedia = asyncHandler(async (req, res) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded", success: false });
+    }
+
+    // Upload to cloudinary with resource_type auto (handles images, videos, raw files)
+    const result = await cloudinary.uploader.upload(file.path, {
+      resource_type: "auto",
+      folder: "talk-sphere-media",
+    });
+
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      success: true,
+      url: result.secure_url,
+      publicId: result.public_id,
+      resourceType: result.resource_type,
+      format: result.format,
+    });
+  } catch (error) {
+    res.status(400);
+    throw new Error(error.message);
+  }
+});
+
 module.exports = {
   allMessages,
   sendMessage,
@@ -268,4 +299,5 @@ module.exports = {
   reactToMessage,
   deleteMessageForMe,
   deleteChatForMe,
+  uploadMedia,
 };
