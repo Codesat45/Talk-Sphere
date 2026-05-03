@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Message = require("../models/messageModel");
 const User = require("../models/userModel");
 const Chat = require("../models/chatModel");
+const cloudinary = require("../utils/cloudinary");
 
 //@description     Get all Messages
 //@route           GET /api/Message/:chatId

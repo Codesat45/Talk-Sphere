@@ -16,6 +16,13 @@ import {
   MdReply,
   MdSearch,
   MdVideocam,
+  MdMic,
+  MdMicOff,
+  MdVideocamOff,
+  MdScreenShare,
+  MdStopScreenShare,
+  MdVolumeUp,
+  MdVolumeOff,
 } from "react-icons/md";
 import { IoMdSend } from "react-icons/io";
 import Dropdown from "./Dropdown";
@@ -45,7 +52,20 @@ const SERVER_ACCESS_BASE_URL =
   process.env.REACT_APP_SERVER_ACCESS_BASE_URL || "http://localhost:5000";
 const ENDPOINT = SERVER_ACCESS_BASE_URL;
 const callConfig = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+  ],
 };
 
 let socket;
@@ -83,6 +103,11 @@ const ChatWindow = () => {
     remoteUser: null,
     chatId: null,
   });
+  const [pendingIceCandidates, setPendingIceCandidates] = useState([]);
+  const [isMicOn, setIsMicOn] = useState(true);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   useEffect(() => {
     callStateRef.current = callState;
@@ -192,9 +217,100 @@ const ChatWindow = () => {
         remoteUser: null,
         chatId: null,
       });
+      setIsScreenSharing(false);
+      setIsMicOn(true);
+      setIsCameraOn(true);
+      setIsSpeakerOn(true);
     },
     [loggedUser]
   );
+
+  const toggleMic = () => {
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMicOn(audioTrack.enabled);
+        console.log("Microphone", audioTrack.enabled ? "ON" : "OFF");
+      }
+    }
+  };
+
+  const toggleCamera = () => {
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsCameraOn(videoTrack.enabled);
+        console.log("Camera", videoTrack.enabled ? "ON" : "OFF");
+      }
+    }
+  };
+
+  const toggleSpeaker = () => {
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.muted = !remoteVideoRef.current.muted;
+      setIsSpeakerOn(!remoteVideoRef.current.muted);
+      console.log("Speaker", remoteVideoRef.current.muted ? "OFF" : "ON");
+    }
+  };
+
+  const toggleScreenShare = async () => {
+    if (!peerConnectionRef.current || !localStreamRef.current) return;
+
+    try {
+      if (!isScreenSharing) {
+        // Start screen sharing
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: "always" },
+          audio: false,
+        });
+
+        const screenTrack = screenStream.getVideoTracks()[0];
+        const sender = peerConnectionRef.current
+          .getSenders()
+          .find((s) => s.track?.kind === "video");
+
+        if (sender) {
+          sender.replaceTrack(screenTrack);
+        }
+
+        // Update local video to show screen
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = screenStream;
+        }
+
+        screenTrack.onended = () => {
+          // When user stops sharing, revert to camera
+          toggleScreenShare();
+        };
+
+        setIsScreenSharing(true);
+        console.log("Screen sharing started");
+      } else {
+        // Stop screen sharing, revert to camera
+        const videoTrack = localStreamRef.current.getVideoTracks()[0];
+        const sender = peerConnectionRef.current
+          .getSenders()
+          .find((s) => s.track?.kind === "video");
+
+        if (sender && videoTrack) {
+          sender.replaceTrack(videoTrack);
+        }
+
+        // Restore camera view
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        }
+
+        setIsScreenSharing(false);
+        console.log("Screen sharing stopped");
+      }
+    } catch (error) {
+      console.error("Error toggling screen share:", error);
+      alert("Screen sharing failed. Please try again.");
+    }
+  };
 
   const createPeerConnection = useCallback(
     (remoteUser, chatId) => {
@@ -212,9 +328,42 @@ const ChatWindow = () => {
       };
 
       peerConnection.ontrack = (event) => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = event.streams[0];
+        console.log("Received remote track:", event.track.kind, "enabled:", event.track.enabled);
+        if (remoteVideoRef.current && event.streams[0]) {
+          const remoteStream = event.streams[0];
+          remoteVideoRef.current.srcObject = remoteStream;
+          
+          // Ensure all tracks are enabled
+          remoteStream.getTracks().forEach(track => {
+            console.log(`Remote ${track.kind} track enabled:`, track.enabled);
+            track.enabled = true;
+          });
+          
+          // Ensure video plays with audio
+          remoteVideoRef.current.play().catch(err => {
+            console.error("Error playing remote video:", err);
+            // Try again after a short delay
+            setTimeout(() => {
+              remoteVideoRef.current.play().catch(e => console.error("Retry failed:", e));
+            }, 500);
+          });
         }
+      };
+
+      peerConnection.onconnectionstatechange = () => {
+        console.log("Connection state:", peerConnection.connectionState);
+        if (peerConnection.connectionState === "connected") {
+          setCallState(prev => ({ ...prev, status: "Connected" }));
+        } else if (peerConnection.connectionState === "disconnected") {
+          setCallState(prev => ({ ...prev, status: "Disconnected" }));
+        } else if (peerConnection.connectionState === "failed") {
+          console.error("Connection failed");
+          setCallState(prev => ({ ...prev, status: "Connection failed" }));
+        }
+      };
+
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log("ICE connection state:", peerConnection.iceConnectionState);
       };
 
       peerConnectionRef.current = peerConnection;
@@ -228,17 +377,49 @@ const ChatWindow = () => {
     if (!remoteUser) return;
 
     try {
+      console.log("Requesting media access for", callType, "call");
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: callType === "video",
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: callType === "video" ? {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        } : false,
       });
+      
+      console.log("Got media stream:", stream.getTracks().map(t => `${t.kind}: ${t.label}`));
+      
+      // Ensure all tracks are enabled
+      stream.getTracks().forEach(track => {
+        track.enabled = true;
+        console.log(`Local ${track.kind} track enabled:`, track.enabled);
+      });
+      
       localStreamRef.current = stream;
-      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      
+      // Set video source and ensure it plays
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+        console.log("Local video srcObject set");
+        
+        // Force play
+        localVideoRef.current.play().then(() => {
+          console.log("Local video playing");
+        }).catch(err => {
+          console.error("Error playing local video:", err);
+        });
+      }
 
       const peerConnection = createPeerConnection(remoteUser, sender._id);
       stream
         .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, stream));
+        .forEach((track) => {
+          console.log(`Adding local ${track.kind} track to peer connection`);
+          peerConnection.addTrack(track, stream);
+        });
 
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
@@ -259,7 +440,8 @@ const ChatWindow = () => {
         chatId: sender._id,
       });
     } catch (error) {
-      alert("Camera or microphone permission is required for calls");
+      console.error("Error starting call:", error);
+      alert(`Camera or microphone permission is required for calls. Error: ${error.message}`);
     }
   };
 
@@ -267,12 +449,41 @@ const ChatWindow = () => {
     if (!incomingCall) return;
 
     try {
+      console.log("Accepting", incomingCall.callType, "call");
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: incomingCall.callType === "video",
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: incomingCall.callType === "video" ? {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        } : false,
       });
+      
+      console.log("Got media stream:", stream.getTracks().map(t => `${t.kind}: ${t.label}`));
+      
+      // Ensure all tracks are enabled
+      stream.getTracks().forEach(track => {
+        track.enabled = true;
+        console.log(`Local ${track.kind} track enabled:`, track.enabled);
+      });
+      
       localStreamRef.current = stream;
-      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      
+      // Set video source and ensure it plays
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+        console.log("Local video srcObject set");
+        
+        // Force play
+        localVideoRef.current.play().then(() => {
+          console.log("Local video playing");
+        }).catch(err => {
+          console.error("Error playing local video:", err);
+        });
+      }
 
       const peerConnection = createPeerConnection(
         incomingCall.from,
@@ -280,11 +491,30 @@ const ChatWindow = () => {
       );
       stream
         .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, stream));
+        .forEach((track) => {
+          console.log(`Adding local ${track.kind} track to peer connection`);
+          peerConnection.addTrack(track, stream);
+        });
 
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(incomingCall.signal)
       );
+      
+      // Process any pending ICE candidates
+      setPendingIceCandidates((currentCandidates) => {
+        if (currentCandidates.length > 0) {
+          console.log("Adding pending ICE candidates on accept:", currentCandidates.length);
+          currentCandidates.forEach(async (candidate) => {
+            try {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+              console.error("Error adding queued ICE candidate:", err);
+            }
+          });
+        }
+        return []; // Clear the queue
+      });
+      
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
 
@@ -304,7 +534,8 @@ const ChatWindow = () => {
       });
       setIncomingCall(null);
     } catch (error) {
-      alert("Camera or microphone permission is required for calls");
+      console.error("Error accepting call:", error);
+      alert(`Camera or microphone permission is required for calls. Error: ${error.message}`);
     }
   };
 
@@ -500,10 +731,31 @@ const ChatWindow = () => {
 
     socket.on("call:incoming", (payload) => setIncomingCall(payload));
     socket.on("call:accepted", async (payload) => {
+      console.log("Call accepted, setting remote description");
       if (peerConnectionRef.current) {
-        await peerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(payload.signal)
-        );
+        try {
+          await peerConnectionRef.current.setRemoteDescription(
+            new RTCSessionDescription(payload.signal)
+          );
+          console.log("Remote description set successfully");
+          
+          // Process any pending ICE candidates using ref to get current state
+          setPendingIceCandidates((currentCandidates) => {
+            if (currentCandidates.length > 0) {
+              console.log("Adding pending ICE candidates:", currentCandidates.length);
+              currentCandidates.forEach(async (candidate) => {
+                try {
+                  await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+                } catch (err) {
+                  console.error("Error adding queued ICE candidate:", err);
+                }
+              });
+            }
+            return []; // Clear the queue
+          });
+        } catch (error) {
+          console.error("Error setting remote description:", error);
+        }
       }
       setCallState((current) => ({
         ...current,
@@ -514,9 +766,21 @@ const ChatWindow = () => {
     });
     socket.on("call:ice-candidate", async (payload) => {
       if (peerConnectionRef.current && payload.candidate) {
-        await peerConnectionRef.current.addIceCandidate(
-          new RTCIceCandidate(payload.candidate)
-        );
+        try {
+          // If remote description is set, add candidate immediately
+          if (peerConnectionRef.current.remoteDescription && peerConnectionRef.current.remoteDescription.type) {
+            await peerConnectionRef.current.addIceCandidate(
+              new RTCIceCandidate(payload.candidate)
+            );
+            console.log("ICE candidate added immediately");
+          } else {
+            // Queue candidate until remote description is set
+            console.log("Queueing ICE candidate (remote description not ready)");
+            setPendingIceCandidates(prev => [...prev, payload.candidate]);
+          }
+        } catch (error) {
+          console.error("Error adding ICE candidate:", error);
+        }
       }
     });
     socket.on("call:ended", () => cleanupCall(false));
@@ -926,8 +1190,74 @@ const ChatWindow = () => {
                 <h5>{callState.status}</h5>
                 <p>{callState.remoteUser?.name}</p>
                 <div className="video-grid">
-                  <video ref={localVideoRef} autoPlay muted playsInline />
-                  <video ref={remoteVideoRef} autoPlay playsInline />
+                  <div className="video-container">
+                    <video 
+                      ref={(el) => {
+                        localVideoRef.current = el;
+                        if (el && localStreamRef.current) {
+                          el.srcObject = localStreamRef.current;
+                          el.play().catch(err => console.error("Local video play error:", err));
+                        }
+                      }}
+                      autoPlay 
+                      muted 
+                      playsInline 
+                      className="local-video"
+                    />
+                    <span className="video-label">You</span>
+                  </div>
+                  <div className="video-container">
+                    <video 
+                      ref={(el) => {
+                        remoteVideoRef.current = el;
+                        if (el) {
+                          el.volume = 1.0;
+                        }
+                      }}
+                      autoPlay 
+                      playsInline 
+                      className="remote-video"
+                    />
+                    <span className="video-label">{callState.remoteUser?.name}</span>
+                  </div>
+                </div>
+                <div className="call-controls">
+                  <button 
+                    type="button" 
+                    className={`control-btn ${isMicOn ? 'active' : 'inactive'}`}
+                    onClick={toggleMic}
+                    title={isMicOn ? "Mute microphone" : "Unmute microphone"}
+                  >
+                    {isMicOn ? <MdMic /> : <MdMicOff />}
+                  </button>
+                  {callState.callType === "video" && (
+                    <>
+                      <button 
+                        type="button" 
+                        className={`control-btn ${isCameraOn ? 'active' : 'inactive'}`}
+                        onClick={toggleCamera}
+                        title={isCameraOn ? "Turn off camera" : "Turn on camera"}
+                      >
+                        {isCameraOn ? <MdVideocam /> : <MdVideocamOff />}
+                      </button>
+                      <button 
+                        type="button" 
+                        className={`control-btn ${isScreenSharing ? 'active' : ''}`}
+                        onClick={toggleScreenShare}
+                        title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
+                      >
+                        {isScreenSharing ? <MdStopScreenShare /> : <MdScreenShare />}
+                      </button>
+                    </>
+                  )}
+                  <button 
+                    type="button" 
+                    className={`control-btn ${isSpeakerOn ? 'active' : 'inactive'}`}
+                    onClick={toggleSpeaker}
+                    title={isSpeakerOn ? "Mute speaker" : "Unmute speaker"}
+                  >
+                    {isSpeakerOn ? <MdVolumeUp /> : <MdVolumeOff />}
+                  </button>
                 </div>
                 <button type="button" className="end-call" onClick={() => cleanupCall(true)}>
                   <MdCallEnd /> End
@@ -1379,16 +1709,59 @@ const Wrapper = styled.section`
     display: grid;
     grid-template-columns: repeat(2, minmax(180px, 320px));
     gap: 10px;
-    video {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      background: #111827;
-      border-radius: 8px;
-      object-fit: cover;
+    .video-container {
+      position: relative;
+      video {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #111827;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .video-label {
+        position: absolute;
+        bottom: 8px;
+        left: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+      }
     }
   }
   .call-actions {
     gap: 10px;
+  }
+  .call-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+      &.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        &:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+      &.inactive {
+        background: #dc2626;
+        color: #fff;
+        &:hover {
+          background: #b91c1c;
+        }
+      }
+    }
   }
   .accept-call,
   .end-call {
