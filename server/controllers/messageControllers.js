@@ -266,17 +266,25 @@ const deleteChatForMe = asyncHandler(async (req, res) => {
 //@access          Protected
 const uploadMedia = asyncHandler(async (req, res) => {
   try {
+    console.log("Upload request received");
+    console.log("File:", req.file);
+    
     const file = req.file;
 
     if (!file) {
+      console.error("No file in request");
       return res.status(400).json({ message: "No file uploaded", success: false });
     }
 
+    console.log("Uploading to cloudinary:", file.path);
+    
     // Upload to cloudinary with resource_type auto (handles images, videos, raw files)
     const result = await cloudinary.uploader.upload(file.path, {
       resource_type: "auto",
       folder: "talk-sphere-media",
     });
+
+    console.log("Upload successful:", result.secure_url);
 
     return res.status(200).json({
       message: "File uploaded successfully",
@@ -287,6 +295,7 @@ const uploadMedia = asyncHandler(async (req, res) => {
       format: result.format,
     });
   } catch (error) {
+    console.error("Upload error:", error);
     res.status(400);
     throw new Error(error.message);
   }

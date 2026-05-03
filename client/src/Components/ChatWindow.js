@@ -113,6 +113,21 @@ const ChatWindow = () => {
     callStateRef.current = callState;
   }, [callState]);
 
+  useEffect(() => {
+    // Ensure remote video element has proper settings
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.volume = 1.0;
+      remoteVideoRef.current.muted = false;
+      
+      // If there's already a stream, ensure it plays
+      if (remoteVideoRef.current.srcObject) {
+        remoteVideoRef.current.play().catch(err => {
+          console.error("Remote video play error:", err);
+        });
+      }
+    }
+  }, [callState.active]);
+
   const senderUser = useSelector(
     (globalState) => globalState.chat.selectedChat
   );
@@ -329,24 +344,43 @@ const ChatWindow = () => {
 
       peerConnection.ontrack = (event) => {
         console.log("Received remote track:", event.track.kind, "enabled:", event.track.enabled);
-        if (remoteVideoRef.current && event.streams[0]) {
+        if (event.streams[0]) {
           const remoteStream = event.streams[0];
-          remoteVideoRef.current.srcObject = remoteStream;
+          
+          console.log("Remote stream tracks:", remoteStream.getTracks().map(t => `${t.kind}: ${t.label}`));
           
           // Ensure all tracks are enabled
           remoteStream.getTracks().forEach(track => {
-            console.log(`Remote ${track.kind} track enabled:`, track.enabled);
             track.enabled = true;
+            console.log(`Remote ${track.kind} track enabled:`, track.enabled);
           });
           
-          // Ensure video plays with audio
-          remoteVideoRef.current.play().catch(err => {
-            console.error("Error playing remote video:", err);
-            // Try again after a short delay
-            setTimeout(() => {
-              remoteVideoRef.current.play().catch(e => console.error("Retry failed:", e));
-            }, 500);
-          });
+          // Set the stream to the video element
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = remoteStream;
+            remoteVideoRef.current.volume = 1.0;
+            remoteVideoRef.current.muted = false;
+            
+            console.log("Remote video srcObject set, attempting to play");
+            
+            // Force play with retry
+            const playVideo = () => {
+              if (remoteVideoRef.current) {
+                remoteVideoRef.current.play()
+                  .then(() => {
+                    console.log("Remote video playing successfully");
+                  })
+                  .catch(err => {
+                    console.error("Error playing remote video:", err);
+                    setTimeout(playVideo, 500);
+                  });
+              }
+            };
+            
+            playVideo();
+          } else {
+            console.error("remoteVideoRef.current is null");
+          }
         }
       };
 
@@ -1192,13 +1226,7 @@ const ChatWindow = () => {
                 <div className="video-grid">
                   <div className="video-container">
                     <video 
-                      ref={(el) => {
-                        localVideoRef.current = el;
-                        if (el && localStreamRef.current) {
-                          el.srcObject = localStreamRef.current;
-                          el.play().catch(err => console.error("Local video play error:", err));
-                        }
-                      }}
+                      ref={localVideoRef}
                       autoPlay 
                       muted 
                       playsInline 
@@ -1208,12 +1236,7 @@ const ChatWindow = () => {
                   </div>
                   <div className="video-container">
                     <video 
-                      ref={(el) => {
-                        remoteVideoRef.current = el;
-                        if (el) {
-                          el.volume = 1.0;
-                        }
-                      }}
+                      ref={remoteVideoRef}
                       autoPlay 
                       playsInline 
                       className="remote-video"
