@@ -5,6 +5,7 @@ import Favourite from "./Favourite";
 import Contacts from "./Contacts";
 import Setting from "./Setting";
 import Default from "./Default";
+import CallLogs from "./CallLogs";
 
 import { toggleTab } from "../Redux/Reducer/Tab/tabAction";
 import { useDispatch, useSelector } from "react-redux";
@@ -124,6 +125,9 @@ const ChatMenu = () => {
             />
           </div>
           <div className={tabIndex === 5 ? "tab-pane active" : "tab-pane "}>
+            <CallLogs closeModal={() => dispatch(toggleTab(3))} />
+          </div>
+          <div className={tabIndex === 6 ? "tab-pane active" : "tab-pane "}>
             <Setting />
           </div>
         </div>

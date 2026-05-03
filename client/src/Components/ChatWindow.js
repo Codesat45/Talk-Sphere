@@ -186,7 +186,7 @@ const ChatWindow = () => {
 
   const createStory = async () => {
     if (!storyText.trim() && !storyMediaUrl.trim()) {
-      alert("Add story text or an image URL");
+      alert("Add story text or an image/video");
       return;
     }
 
@@ -198,9 +198,46 @@ const ChatWindow = () => {
       setStoryText("");
       setStoryMediaUrl("");
       fetchStories();
+      alert("Story posted successfully!");
     } catch (error) {
       alert(error.response?.data?.message || "Unable to create story");
     }
+  };
+
+  const uploadStoryMedia = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*,video/*";
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await axios.post(
+          `${SERVER_ACCESS_BASE_URL}/api/message/upload`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        if (response.data.success) {
+          setStoryMediaUrl(response.data.url);
+          alert("Media uploaded! Add text or post directly.");
+        }
+      } catch (error) {
+        alert("Failed to upload media. Please try again.");
+      }
+    };
+    input.click();
   };
 
   const viewStory = async (story) => {
@@ -1134,13 +1171,12 @@ const ChatWindow = () => {
                   <input
                     value={storyText}
                     onChange={(event) => setStoryText(event.target.value)}
-                    placeholder="Add story"
+                    placeholder="Add story text"
                   />
-                  <input
-                    value={storyMediaUrl}
-                    onChange={(event) => setStoryMediaUrl(event.target.value)}
-                    placeholder="Image URL"
-                  />
+                  <button type="button" onClick={uploadStoryMedia} title="Upload image/video">
+                    <MdImage />
+                  </button>
+                  {storyMediaUrl && <span className="media-uploaded">✓ Media uploaded</span>}
                   <button type="button" onClick={createStory} title="Post story">
                     <MdAddCircle />
                   </button>
@@ -1585,6 +1621,15 @@ const Wrapper = styled.section`
     button {
       color: ${({ theme }) => theme.colors.primaryRgb};
       font-size: 1.7rem;
+      cursor: pointer;
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+    .media-uploaded {
+      color: #10b981;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
   }
   .story-list {

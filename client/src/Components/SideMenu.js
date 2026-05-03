@@ -5,6 +5,7 @@ import { CgProfile } from "react-icons/cg";
 import { AiOutlineSetting, AiOutlineStar } from "react-icons/ai";
 import { RiContactsLine } from "react-icons/ri";
 import { BsChatSquareDots } from "react-icons/bs";
+import { MdCall } from "react-icons/md";
 import { CgClose, CgMenu } from "react-icons/cg";
 import Toggler from "./Toggler";
 
@@ -50,6 +51,11 @@ const SideMenu = () => {
     },
     {
       id: 5,
+      icon: MdCall,
+      title: "Call Logs",
+    },
+    {
+      id: 6,
       icon: AiOutlineSetting,
       title: "Setting",
 
