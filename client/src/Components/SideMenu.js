@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { CgProfile } from "react-icons/cg";
-import { AiOutlineSetting, AiOutlineStar } from "react-icons/ai";
+import { AiOutlineSetting } from "react-icons/ai";
 import { RiContactsLine } from "react-icons/ri";
 import { BsChatSquareDots } from "react-icons/bs";
 import { MdCall } from "react-icons/md";
@@ -42,26 +42,21 @@ const SideMenu = () => {
     },
     {
       id: 3,
-      icon: AiOutlineStar,
-      title: "Favourite",
-    },
-    {
-      id: 4,
       icon: BsChatSquareDots,
       title: "Chats",
     },
     {
-      id: 5,
+      id: 4,
       icon: RiContactsLine,
       title: "Contacts",
     },
     {
-      id: 6,
+      id: 5,
       icon: MdCall,
       title: "Call Logs",
     },
     {
-      id: 7,
+      id: 6,
       icon: AiOutlineSetting,
       title: "Setting",
 
@@ -126,7 +121,7 @@ const SideMenu = () => {
                   onClick={() => activeTab(index+1)}
                 >
 
-                  <div to={items.title} className={index === 3 && tabIndex === 0 ? "nav-link active" : (tabIndex === (index + 1) ? "nav-link active" : "nav-link")} onClick={() => setMenuIcon(false)}>
+                  <div to={items.title} className={index === 2 && tabIndex === 0 ? "nav-link active" : (tabIndex === (index + 1) ? "nav-link active" : "nav-link")} onClick={() => setMenuIcon(false)}>
 
                     <items.icon className="icon" />
                   </div>

@@ -1363,7 +1363,6 @@ const ChatWindow = () => {
                       muted 
                       playsInline 
                       className="local-video"
-                      style={{ display: callState.callType === "video" ? "block" : "none" }}
                     />
                     {callState.callType === "audio" && (
                       <div className="audio-avatar">
@@ -1378,7 +1377,6 @@ const ChatWindow = () => {
                       autoPlay 
                       playsInline 
                       className="remote-video"
-                      style={{ display: callState.callType === "video" ? "block" : "none" }}
                     />
                     {callState.callType === "audio" && (
                       <div className="audio-avatar">
@@ -1902,8 +1900,12 @@ const Wrapper = styled.section`
         background: #111827;
         border-radius: 8px;
         object-fit: cover;
+        display: block;
       }
       .audio-avatar {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         aspect-ratio: 4 / 3;
         background: #111827;
@@ -1911,6 +1913,7 @@ const Wrapper = styled.section`
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 1;
         img {
           width: 120px;
           height: 120px;
@@ -1928,6 +1931,7 @@ const Wrapper = styled.section`
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.8rem;
+        z-index: 2;
       }
     }
   }

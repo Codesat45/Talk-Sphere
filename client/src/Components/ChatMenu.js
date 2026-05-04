@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Profile from "./Profile";
-import Favourite from "./Favourite";
 import Contacts from "./Contacts";
 import Setting from "./Setting";
 import Default from "./Default";
@@ -105,19 +104,16 @@ const ChatMenu = () => {
              />
           </div>
           <div className={tabIndex === 2 ? "tab-pane active" : "tab-pane "}>
-            <Stories closeModal={() => dispatch(toggleTab(4))} />
-          </div>
-          <div className={tabIndex === 3 ? "tab-pane active" : "tab-pane "}>
-            <Favourite />
+            <Stories closeModal={() => dispatch(toggleTab(3))} />
           </div>
           <div
             className={
-              tabIndex === 4 || tabIndex === 0 ? "tab-pane active" : "tab-pane"
+              tabIndex === 3 || tabIndex === 0 ? "tab-pane active" : "tab-pane"
             }
           >
             <Default />
           </div>
-          <div className={tabIndex === 5 ? "tab-pane active" : "tab-pane "}>
+          <div className={tabIndex === 4 ? "tab-pane active" : "tab-pane "}>
             <Contacts
               search={search}
               handleChange={handleChange}
@@ -128,10 +124,10 @@ const ChatMenu = () => {
               showResult={showResult}
             />
           </div>
-          <div className={tabIndex === 6 ? "tab-pane active" : "tab-pane "}>
-            <CallLogs closeModal={() => dispatch(toggleTab(4))} />
+          <div className={tabIndex === 5 ? "tab-pane active" : "tab-pane "}>
+            <CallLogs closeModal={() => dispatch(toggleTab(3))} />
           </div>
-          <div className={tabIndex === 7 ? "tab-pane active" : "tab-pane "}>
+          <div className={tabIndex === 6 ? "tab-pane active" : "tab-pane "}>
             <Setting />
           </div>
         </div>
