@@ -2027,12 +2027,66 @@ const Wrapper = styled.section`
   .dropdown-menu {
     top: 70px;
     z-index: 101;
-    font-size: 1.1rem;
-    min-width: 15rem;
+    min-width: 200px;
     right: 0;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     background-color: ${({ theme }) => theme.colors.bg.primary};
+    border: 1px solid rgba(${({ theme }) => theme.colors.border}, 0.3);
+    
+    .dropdown-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: ${({ theme }) => theme.colors.heading};
+      
+      &:hover, &.active {
+        background-color: rgba(${({ theme }) => theme.colors.rgb.primary}, 0.1);
+      }
+      
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        flex-shrink: 0;
+        
+        .icon {
+          font-size: 1.2rem;
+        }
+      }
+      
+      .btn-outline-primary {
+        background-color: rgba(${({ theme }) => theme.colors.rgb.primary}, 0.1);
+        color: ${({ theme }) => theme.colors.primaryRgb};
+      }
+      
+      .btn-outline-danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+      }
+      
+      .btn-outline-light {
+        background-color: rgba(156, 163, 175, 0.1);
+        color: #6b7280;
+      }
+      
+      .dropdown-text {
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap;
+        flex: 1;
+        text-align: left;
+      }
+    }
   }
 
   @media screen and (min-width: 800px) {

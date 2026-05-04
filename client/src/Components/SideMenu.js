@@ -7,6 +7,7 @@ import { RiContactsLine } from "react-icons/ri";
 import { BsChatSquareDots } from "react-icons/bs";
 import { MdCall } from "react-icons/md";
 import { CgClose, CgMenu } from "react-icons/cg";
+import { HiOutlineStatusOnline } from "react-icons/hi";
 import Toggler from "./Toggler";
 
 
@@ -36,26 +37,31 @@ const SideMenu = () => {
     },
     {
       id: 2,
+      icon: HiOutlineStatusOnline,
+      title: "Stories",
+    },
+    {
+      id: 3,
       icon: AiOutlineStar,
       title: "Favourite",
     },
     {
-      id: 3,
+      id: 4,
       icon: BsChatSquareDots,
       title: "Chats",
     },
     {
-      id: 4,
+      id: 5,
       icon: RiContactsLine,
       title: "Contacts",
     },
     {
-      id: 5,
+      id: 6,
       icon: MdCall,
       title: "Call Logs",
     },
     {
-      id: 6,
+      id: 7,
       icon: AiOutlineSetting,
       title: "Setting",
 
@@ -120,7 +126,7 @@ const SideMenu = () => {
                   onClick={() => activeTab(index+1)}
                 >
 
-                  <div to={items.title} className={index === 2 && tabIndex === 0 ? "nav-link active" : (tabIndex === (index + 1) ? "nav-link active" : "nav-link")} onClick={() => setMenuIcon(false)}>
+                  <div to={items.title} className={index === 3 && tabIndex === 0 ? "nav-link active" : (tabIndex === (index + 1) ? "nav-link active" : "nav-link")} onClick={() => setMenuIcon(false)}>
 
                     <items.icon className="icon" />
                   </div>

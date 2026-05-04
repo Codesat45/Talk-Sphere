@@ -142,21 +142,21 @@ const Dropdown = (props) => {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="dropdown-menu absolute py-4">
+          <Menu.Items className="dropdown-menu absolute py-4 px-2">
             <Menu.Item>
               {({ active }) => (
                 <button
                   className={`${
                     active
-                      ? "active flex items-center justify-between"
-                      : " flex items-center justify-between"
+                      ? "active dropdown-item"
+                      : "dropdown-item"
                   }`}
                   onClick={props.openModal}
                 >
-                  <div className="icon-btn btn-outline-primary mr-4">
-                    <CgProfile className="icon inline" />
-                  </div>{" "}
-                  <h5 className="relative w-full text-left">view contact</h5>
+                  <div className="icon-btn btn-outline-primary">
+                    <CgProfile className="icon" />
+                  </div>
+                  <span className="dropdown-text">View Contact</span>
                 </button>
               )}
             </Menu.Item>
@@ -165,17 +165,15 @@ const Dropdown = (props) => {
                 <button
                   className={`${
                     active
-                      ? "active flex items-center justify-between"
-                      : "flex items-center justify-between"
+                      ? "active dropdown-item"
+                      : "dropdown-item"
                   }`}
                   onClick={handleClickMarkAsFavourites}
                 >
-                  <div className="icon-btn btn-outline-danger mr-4">
-                    <MdFavorite className="icon inline" />
-                  </div>{" "}
-                  <h5 className="relative w-full text-left">
-                    Mark As Favourites
-                  </h5>
+                  <div className="icon-btn btn-outline-danger">
+                    <MdFavorite className="icon" />
+                  </div>
+                  <span className="dropdown-text">Mark As Favourites</span>
                 </button>
               )}
             </Menu.Item>
@@ -184,15 +182,15 @@ const Dropdown = (props) => {
                 <button
                   className={`${
                     active
-                      ? "active flex items-center justify-between"
-                      : "flex items-center justify-between"
+                      ? "active dropdown-item"
+                      : "dropdown-item"
                   }`}
                   onClick={handleClickDeleteChat}
                 >
-                  <div className="icon-btn btn-outline-danger mr-4">
-                    <RiDeleteBin6Line className="icon inline" />
-                  </div>{" "}
-                  <h5 className="relative w-full text-left">Delete Chat</h5>
+                  <div className="icon-btn btn-outline-danger">
+                    <RiDeleteBin6Line className="icon" />
+                  </div>
+                  <span className="dropdown-text">Delete Chat</span>
                 </button>
               )}
             </Menu.Item>
@@ -201,22 +199,21 @@ const Dropdown = (props) => {
                 <button
                   className={`${
                     active
-                      ? "active flex items-center justify-between"
-                      : "flex items-center justify-between"
+                      ? "active dropdown-item"
+                      : "dropdown-item"
                   }`}
                   onClick={handleClickLeaveGroup}
                 >
-                  <div className="icon-btn btn-outline-light mr-4">
-                    {/* <ImBlocked className="icon inline" /> */}
-                    {sender.isGroupChat ? (
-                      <ImExit className="icon inline" />
+                  <div className="icon-btn btn-outline-light">
+                    {sender?.isGroupChat ? (
+                      <ImExit className="icon" />
                     ) : (
-                      <ImBlocked className="icon inline" />
+                      <ImBlocked className="icon" />
                     )}
-                  </div>{" "}
-                  <h5 className="relative w-full text-left">
-                    {sender.isGroupChat ? "Leave Group " : "Block"}
-                  </h5>
+                  </div>
+                  <span className="dropdown-text">
+                    {sender?.isGroupChat ? "Leave Group" : "Block"}
+                  </span>
                 </button>
               )}
             </Menu.Item>
