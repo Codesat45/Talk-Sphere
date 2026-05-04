@@ -1362,7 +1362,7 @@ const ChatWindow = () => {
                       autoPlay 
                       muted 
                       playsInline 
-                      className="local-video"
+                      className={callState.callType === "video" ? "local-video video-visible" : "local-video video-hidden"}
                     />
                     {callState.callType === "audio" && (
                       <div className="audio-avatar">
@@ -1376,7 +1376,7 @@ const ChatWindow = () => {
                       ref={remoteVideoRef}
                       autoPlay 
                       playsInline 
-                      className="remote-video"
+                      className={callState.callType === "video" ? "remote-video video-visible" : "remote-video video-hidden"}
                     />
                     {callState.callType === "audio" && (
                       <div className="audio-avatar">
@@ -1900,7 +1900,16 @@ const Wrapper = styled.section`
         background: #111827;
         border-radius: 8px;
         object-fit: cover;
-        display: block;
+      }
+      .video-visible {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .video-hidden {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
       }
       .audio-avatar {
         position: absolute;
