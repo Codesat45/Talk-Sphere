@@ -117,16 +117,18 @@ const ChatWindow = () => {
   }, [callState]);
 
   useEffect(() => {
-    // Ensure remote video element has proper settings
+    // Ensure video elements have proper settings
+    if (localVideoRef.current && localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(err => console.error("Local video play error:", err));
+    }
+    
     if (remoteVideoRef.current) {
       remoteVideoRef.current.volume = 1.0;
       remoteVideoRef.current.muted = false;
       
-      // If there's already a stream, ensure it plays
       if (remoteVideoRef.current.srcObject) {
-        remoteVideoRef.current.play().catch(err => {
-          console.error("Remote video play error:", err);
-        });
+        remoteVideoRef.current.play().catch(err => console.error("Remote video play error:", err));
       }
     }
     
@@ -375,8 +377,11 @@ const ChatWindow = () => {
       if (!isScreenSharing) {
         // Start screen sharing
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { cursor: "always" },
-          audio: false,
+          video: { 
+            cursor: "always",
+            displaySurface: "monitor"
+          },
+          audio: true
         });
 
         const screenTrack = screenStream.getVideoTracks()[0];
@@ -385,12 +390,13 @@ const ChatWindow = () => {
           .find((s) => s.track?.kind === "video");
 
         if (sender) {
-          sender.replaceTrack(screenTrack);
+          await sender.replaceTrack(screenTrack);
         }
 
         // Update local video to show screen
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = screenStream;
+          localVideoRef.current.play().catch(err => console.error("Screen share play error:", err));
         }
 
         screenTrack.onended = () => {
@@ -408,12 +414,13 @@ const ChatWindow = () => {
           .find((s) => s.track?.kind === "video");
 
         if (sender && videoTrack) {
-          sender.replaceTrack(videoTrack);
+          await sender.replaceTrack(videoTrack);
         }
 
         // Restore camera view
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStreamRef.current;
+          localVideoRef.current.play().catch(err => console.error("Camera restore play error:", err));
         }
 
         setIsScreenSharing(false);
@@ -421,7 +428,7 @@ const ChatWindow = () => {
       }
     } catch (error) {
       console.error("Error toggling screen share:", error);
-      alert("Screen sharing failed. Please try again.");
+      alert("Screen sharing failed: " + error.message);
     }
   };
 
@@ -453,31 +460,22 @@ const ChatWindow = () => {
             console.log(`Remote ${track.kind} track enabled:`, track.enabled);
           });
           
-          // Set the stream to the video element
+          // Set the stream immediately
           if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = remoteStream;
             remoteVideoRef.current.volume = 1.0;
             remoteVideoRef.current.muted = false;
             
-            console.log("Remote video srcObject set, attempting to play");
+            console.log("Remote video srcObject set");
             
-            // Force play with retry
-            const playVideo = () => {
+            // Force play immediately
+            setTimeout(() => {
               if (remoteVideoRef.current) {
                 remoteVideoRef.current.play()
-                  .then(() => {
-                    console.log("Remote video playing successfully");
-                  })
-                  .catch(err => {
-                    console.error("Error playing remote video:", err);
-                    setTimeout(playVideo, 500);
-                  });
+                  .then(() => console.log("Remote video playing successfully"))
+                  .catch(err => console.error("Error playing remote video:", err));
               }
-            };
-            
-            playVideo();
-          } else {
-            console.error("remoteVideoRef.current is null");
+            }, 100);
           }
         }
       };
