@@ -10,6 +10,7 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 const storyRoutes = require("./routes/storyRoutes");
 const meetingRoutes = require("./routes/meetingRoutes");
 const scheduledMessageRoutes = require("./routes/scheduledMessageRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const cors = require("cors");
 const helmet = require("helmet");
 
@@ -54,6 +55,7 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/story", storyRoutes);
 app.use("/api/meeting", meetingRoutes);
 app.use("/api/scheduled", scheduledMessageRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

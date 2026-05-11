@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const Meeting = require("../models/meetingModel");
 const User = require("../models/userModel");
+const { sendMeetingInvitation, sendMeetingUpdate } = require("../utils/emailService");
+const { createNotification } = require("../controllers/notificationControllers");
 
 // Create a new meeting
 const createMeeting = asyncHandler(async (req, res) => {
@@ -30,6 +32,30 @@ const createMeeting = asyncHandler(async (req, res) => {
   const populatedMeeting = await Meeting.findById(meeting._id)
     .populate("organizer", "name pic email")
     .populate("participants", "name pic email");
+
+  // Send email invitations to all participants
+  try {
+    if (populatedMeeting.participants.length > 0) {
+      await sendMeetingInvitation(populatedMeeting, populatedMeeting.participants);
+      
+      // Create in-app notifications
+      for (const participant of populatedMeeting.participants) {
+        await createNotification(
+          participant._id,
+          "meeting_invitation",
+          `Meeting Invitation: ${populatedMeeting.title}`,
+          `${populatedMeeting.organizer.name} invited you to a meeting on ${new Date(populatedMeeting.scheduledTime).toLocaleString()}`,
+          populatedMeeting._id,
+          populatedMeeting.meetingLink
+        );
+      }
+      
+      console.log("Meeting invitations sent successfully");
+    }
+  } catch (emailError) {
+    console.error("Failed to send email invitations:", emailError);
+    // Don't fail the meeting creation if email fails
+  }
 
   res.status(201).json(populatedMeeting);
 });
@@ -82,19 +108,39 @@ const updateMeeting = asyncHandler(async (req, res) => {
     .populate("organizer", "name pic email")
     .populate("participants", "name pic email");
 
+  // Send update notification to participants
+  try {
+    if (updatedMeeting.participants.length > 0) {
+      await sendMeetingUpdate(updatedMeeting, updatedMeeting.participants, "updated");
+    }
+  } catch (emailError) {
+    console.error("Failed to send update emails:", emailError);
+  }
+
   res.json(updatedMeeting);
 });
 
 // Delete meeting
 const deleteMeeting = asyncHandler(async (req, res) => {
-  const meeting = await Meeting.findById(req.params.id);
+  const meeting = await Meeting.findById(req.params.id)
+    .populate("organizer", "name pic email")
+    .populate("participants", "name pic email");
 
   if (!meeting) {
     return res.status(404).json({ message: "Meeting not found" });
   }
 
-  if (meeting.organizer.toString() !== req.user._id.toString()) {
+  if (meeting.organizer._id.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: "Only organizer can delete meeting" });
+  }
+
+  // Send cancellation notification to participants
+  try {
+    if (meeting.participants.length > 0) {
+      await sendMeetingUpdate(meeting, meeting.participants, "cancelled");
+    }
+  } catch (emailError) {
+    console.error("Failed to send cancellation emails:", emailError);
   }
 
   await Meeting.findByIdAndDelete(req.params.id);
