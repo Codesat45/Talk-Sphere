@@ -6,6 +6,8 @@ import Setting from "./Setting";
 import Default from "./Default";
 import CallLogs from "./CallLogs";
 import Stories from "./Stories";
+import MeetingScheduler from "./MeetingScheduler";
+import ScheduledMessages from "./ScheduledMessages";
 
 import { toggleTab } from "../Redux/Reducer/Tab/tabAction";
 import { useDispatch, useSelector } from "react-redux";
@@ -86,31 +88,17 @@ const ChatMenu = () => {
         <div className="tab-content">
           <div className={tabIndex === 1 ? "tab-pane active" : "tab-pane "}>
             <Profile 
-             pic={
-                   user.pic
-                  }
-                  name = {
-                    user.name
-                  }
-                  email = {
-                  user.email
-                  }
-                  about ={
-                  user.about
-                  }
-                  contact ={
-                  user.contact
-                  }
+             pic={user.pic}
+             name={user.name}
+             email={user.email}
+             about={user.about}
+             contact={user.contact}
              />
           </div>
           <div className={tabIndex === 2 ? "tab-pane active" : "tab-pane "}>
             <Stories closeModal={() => dispatch(toggleTab(3))} />
           </div>
-          <div
-            className={
-              tabIndex === 3 || tabIndex === 0 ? "tab-pane active" : "tab-pane"
-            }
-          >
+          <div className={tabIndex === 3 || tabIndex === 0 ? "tab-pane active" : "tab-pane"}>
             <Default />
           </div>
           <div className={tabIndex === 4 ? "tab-pane active" : "tab-pane "}>
@@ -120,7 +108,7 @@ const ChatMenu = () => {
               handleClick={handleClick}
               searchResult={searchResult}
               createNewChat={createNewChat}
-              UserLoading = {UserLoading}
+              UserLoading={UserLoading}
               showResult={showResult}
             />
           </div>
@@ -128,6 +116,12 @@ const ChatMenu = () => {
             <CallLogs closeModal={() => dispatch(toggleTab(3))} />
           </div>
           <div className={tabIndex === 6 ? "tab-pane active" : "tab-pane "}>
+            <MeetingScheduler closeModal={() => dispatch(toggleTab(3))} />
+          </div>
+          <div className={tabIndex === 7 ? "tab-pane active" : "tab-pane "}>
+            <ScheduledMessages closeModal={() => dispatch(toggleTab(3))} />
+          </div>
+          <div className={tabIndex === 8 ? "tab-pane active" : "tab-pane "}>
             <Setting />
           </div>
         </div>

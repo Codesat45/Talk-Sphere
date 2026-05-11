@@ -5,9 +5,10 @@ import { CgProfile } from "react-icons/cg";
 import { AiOutlineSetting } from "react-icons/ai";
 import { RiContactsLine } from "react-icons/ri";
 import { BsChatSquareDots } from "react-icons/bs";
-import { MdCall } from "react-icons/md";
+import { MdCall, MdSchedule } from "react-icons/md";
 import { CgClose, CgMenu } from "react-icons/cg";
 import { HiOutlineStatusOnline } from "react-icons/hi";
+import { MdAutorenew } from "react-icons/md";
 import Toggler from "./Toggler";
 
 
@@ -57,9 +58,18 @@ const SideMenu = () => {
     },
     {
       id: 6,
+      icon: MdSchedule,
+      title: "Meetings",
+    },
+    {
+      id: 7,
+      icon: MdAutorenew,
+      title: "Scheduled",
+    },
+    {
+      id: 8,
       icon: AiOutlineSetting,
       title: "Setting",
-
     },
   ];
   const dispatch = useDispatch();
